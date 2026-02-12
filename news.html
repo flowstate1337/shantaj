@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="referrer" content="strict-origin-when-cross-origin"/>
+<title>SHANTAJ — News</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;cursor:none !important;}
+  html{scroll-behavior:smooth}
+
+  :root{
+    --bg:#ffffff;
+    --text:#111;
+    --card:rgba(255,255,255,0.62);
+    --border:rgba(0,0,0,0.10);
+    --accent:#111;
+    --btn-bg:#111;
+    --btn-text:#fff;
+  }
+  body.dark{
+    --bg:#0a0a0a;
+    --text:#fff;
+    --card:rgba(255,255,255,0.06);
+    --border:rgba(255,255,255,0.10);
+    --accent:#fff;
+    --btn-bg:#fff;
+    --btn-text:#111;
+  }
+
+  body{
+    font-family:'Inter',sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    transition:background .35s ease,color .35s ease;
+    overflow-x:hidden;
+  }
+
+  @media(max-width:768px){
+    .cursor{display:none}
+    *{cursor:auto !important;}
+  }
+
+  .cursor{
+    position:fixed;width:8px;height:8px;border-radius:50%;
+    background:var(--accent);pointer-events:none;
+    transform:translate(-50%,-50%);z-index:10000;
+  }
+
+  nav{position:fixed;top:0;left:0;right:0;backdrop-filter:blur(10px);background:rgba(255,255,255,0.6);border-bottom:1px solid var(--border);z-index:1000;}
+  body.dark nav{background:rgba(0,0,0,0.6)}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;position:relative;}
+  .nav-links{margin:0 auto;display:flex;gap:30px;align-items:center;justify-content:center;}
+  .nav-links a{text-decoration:none;font-weight:800;color:var(--text);letter-spacing:.5px;text-transform:uppercase;position:relative;}
+  .nav-links a::after{content:"";position:absolute;left:0;bottom:-6px;height:2px;width:0;background:var(--accent);transition:.25s ease;}
+  .nav-links a:hover::after{width:100%;}
+
+  .toggle{position:absolute;right:20px;width:50px;height:26px}
+  .toggle input{display:none}
+  .slider{position:absolute;inset:0;background:#ccc;border-radius:50px;transition:.25s;outline:1px solid var(--border);}
+  .slider:before{content:"";position:absolute;height:20px;width:20px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.25s}
+  input:checked + .slider{background:var(--accent)}
+  input:checked + .slider:before{transform:translateX(24px);background:var(--bg)}
+
+  main{
+    max-width:1100px;
+    margin:0 auto;
+    padding:120px 20px 80px 20px;
+  }
+
+  h1{
+    text-align:center;
+    font-size:2.2rem;
+    margin-bottom:18px;
+  }
+
+  /* Category picker (restored) */
+  .category-wrap{
+    display:flex;
+    justify-content:center;
+    margin:0 auto 26px auto;
+  }
+  .category-bar{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:center;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:999px;
+    padding:8px 10px;
+    backdrop-filter:blur(18px);
+  }
+  .cat-chip{
+    border:1px solid var(--border);
+    background:transparent;
+    color:var(--text);
+    padding:10px 12px;
+    border-radius:999px;
+    font-weight:900;
+    letter-spacing:.6px;
+    text-transform:uppercase;
+    font-size:.75rem;
+    transition:.18s;
+  }
+  .cat-chip:hover{background:var(--border);transform:scale(1.02)}
+  .cat-chip.active{
+    background:var(--accent);
+    color:var(--bg);
+    border-color:transparent;
+  }
+
+  .news-stack{
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+  }
+
+  .news-card{
+    width:100%;
+    border:1px solid var(--border);
+    border-radius:18px;
+    background:var(--card);
+    backdrop-filter:blur(20px);
+    padding:18px 18px;
+    overflow:hidden;
+  }
+
+  .news-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:10px;
+  }
+
+  .tag{
+    display:inline-flex;align-items:center;
+    padding:6px 10px;border-radius:999px;
+    border:1px solid var(--border);
+    background:rgba(255,255,255,0.22);
+    font-weight:900;letter-spacing:.5px;text-transform:uppercase;
+    font-size:.72rem;opacity:.9;
+  }
+  body.dark .tag{background:rgba(0,0,0,0.22);}
+
+  .date{
+    font-weight:800;
+    opacity:.75;
+    font-size:.85rem;
+    letter-spacing:.2px;
+    white-space:nowrap;
+  }
+
+  .title{
+    font-weight:900;
+    font-size:1.12rem;
+    margin-bottom:6px;
+  }
+
+  .teaser{
+    font-weight:700;
+    opacity:.9;
+    line-height:1.45;
+  }
+
+  .full{
+    margin-top:10px;
+    opacity:0;
+    height:0;
+    overflow:hidden;
+    transition:opacity .25s ease, height .25s ease;
+  }
+  .news-card.expanded .full{
+    opacity:1;
+    height:auto;
+  }
+
+  .actions{
+    margin-top:12px;
+    display:flex;
+    justify-content:flex-end;
+  }
+
+  .btn{
+    background:none;
+    border:1px solid var(--border);
+    color:var(--text);
+    padding:8px 16px;
+    border-radius:999px;
+    font-weight:900;
+    text-transform:uppercase;
+    font-size:.78rem;
+    transition:.2s;
+  }
+  .btn:hover{background:var(--border);transform:scale(1.03)}
+
+  footer{text-align:center;padding:40px;border-top:1px solid var(--border);margin-top:60px}
+</style>
+</head>
+<body>
+<div class="cursor" id="cursor"></div>
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-links">
+      <a href="index.html">HOME</a>
+      <a href="index.html#vip">VIP</a>
+      <a href="news.html">NEWS</a>
+    </div>
+    <label class="toggle" aria-label="Toggle dark mode">
+      <input type="checkbox" id="themeToggle">
+      <span class="slider"></span>
+    </label>
+  </div>
+</nav>
+
+<main>
+  <h1>News</h1>
+
+  <!-- Category picker restored -->
+  <div class="category-wrap">
+    <div class="category-bar" id="categoryBar"></div>
+  </div>
+
+  <div class="news-stack" id="newsStack"></div>
+</main>
+
+<footer>© 2026 SHANTAJ</footer>
+
+<script>
+  // Theme
+  const themeToggle=document.getElementById('themeToggle');
+  if(localStorage.getItem('theme')==='dark'){
+    document.body.classList.add('dark');
+    themeToggle.checked=true;
+  }
+  themeToggle.addEventListener('change',()=>{
+    document.body.classList.toggle('dark');
+    const mode=document.body.classList.contains('dark')?'dark':'light';
+    localStorage.setItem('theme',mode);
+    location.reload();
+  });
+
+  // Cursor dot
+  const cursor=document.getElementById('cursor');
+  document.addEventListener('mousemove',e=>{
+    cursor.style.left=e.clientX+'px';
+    cursor.style.top=e.clientY+'px';
+  });
+
+  // News
+  const NEWS = [
+    { date:"2026-02-10", tag:"Event",  title:"SHANTAJ 3v3 WINTER BOOST CUP", teaser:"Tournament announcement is live.", body:"Register in Discord. More info and brackets will be posted soon." },
+    { date:"2026-02-05", tag:"Update", title:"Update 1.4 Released", teaser:"Optimized server performance.", body:"This update includes a brand new anti-cheat system and smoother movement." },
+    { date:"2026-01-28", tag:"VIP",    title:"New VIP Perks", teaser:"New features added for all VIP members!", body:"VIP members now have access to custom knife skins and trails." },
+    { date:"2026-01-20", tag:"Fix",    title:"Hotfix Applied", teaser:"Small fixes and improvements.", body:"Fixed minor map exploits and improved spectator stability." },
+  ];
+
+  function fmtDate(iso){
+    try{
+      const d = new Date(iso+"T00:00:00");
+      return d.toLocaleDateString(undefined, { year:'numeric', month:'short', day:'2-digit' });
+    }catch(e){
+      return iso;
+    }
+  }
+
+  // Sort latest -> oldest
+  NEWS.sort((a,b)=> new Date(b.date) - new Date(a.date));
+
+  const stack = document.getElementById('newsStack');
+  const categoryBar = document.getElementById('categoryBar');
+
+  let activeTag = "All";
+
+  function buildCategories(){
+    const tags = Array.from(new Set(NEWS.map(n => String(n.tag || "Update"))));
+    const all = ["All", ...tags];
+
+    categoryBar.innerHTML = "";
+    all.forEach(t=>{
+      const b = document.createElement('button');
+      b.type = "button";
+      b.className = "cat-chip" + (t === activeTag ? " active" : "");
+      b.textContent = t;
+      b.addEventListener('click', ()=>{
+        activeTag = t;
+        [...categoryBar.querySelectorAll('.cat-chip')].forEach(x=>{
+          x.classList.toggle('active', x.textContent === activeTag);
+        });
+        renderNews();
+      });
+      categoryBar.appendChild(b);
+    });
+  }
+
+  function renderNews(){
+    stack.innerHTML = "";
+    const filtered = activeTag === "All"
+      ? NEWS
+      : NEWS.filter(n => String(n.tag || "Update") === activeTag);
+
+    filtered.forEach(item=>{
+      const card = document.createElement('div');
+      card.className = "news-card";
+      card.innerHTML = `
+        <div class="news-top">
+          <div class="tag">${String(item.tag||"Update").toUpperCase()}</div>
+          <div class="date">${fmtDate(item.date)}</div>
+        </div>
+        <div class="title">${item.title}</div>
+        <div class="teaser">${item.teaser}</div>
+        <div class="full">${item.body}</div>
+        <div class="actions">
+          <button class="btn" type="button">Expand</button>
+        </div>
+      `;
+      const btn = card.querySelector('.btn');
+      btn.addEventListener('click', ()=>{
+        card.classList.toggle('expanded');
+        btn.textContent = card.classList.contains('expanded') ? "Hide" : "Expand";
+      });
+      stack.appendChild(card);
+    });
+  }
+
+  buildCategories();
+  renderNews();
+</script>
+</body>
+</html>

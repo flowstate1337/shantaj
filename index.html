@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="referrer" content="strict-origin-when-cross-origin"/>
+<title>SHANTAJ — Landing</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;cursor:none !important;}
+  html{scroll-behavior:smooth}
+
+  :root{
+    --bg:#ffffff;
+    --text:#111;
+    --card:rgba(255,255,255,0.62);
+    --border:rgba(0,0,0,0.10);
+    --accent:#111;
+    --btn-bg:#111;
+    --btn-text:#fff;
+  }
+  body.dark{
+    --bg:#0a0a0a;
+    --text:#fff;
+    --card:rgba(255,255,255,0.06);
+    --border:rgba(255,255,255,0.10);
+    --accent:#fff;
+    --btn-bg:#fff;
+    --btn-text:#111;
+  }
+
+  body{
+    font-family:'Inter',sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    transition:background .35s ease,color .35s ease;
+    overflow-x:hidden;
+  }
+
+  @media(max-width:768px){
+    .cursor,.trail-canvas{display:none}
+    .logo img{width:280px !important;}
+    *{cursor:auto !important;}
+  }
+
+  /* Cursor */
+  .cursor{
+    position:fixed;
+    width:8px;height:8px;
+    border-radius:50%;
+    background:var(--accent);
+    pointer-events:none;
+    transform:translate(-50%,-50%);
+    z-index:10000;
+  }
+  .trail-canvas{position:fixed;inset:0;pointer-events:none;z-index:9999;}
+
+  /* Cursor: clear in modal (NO STROKE) */
+  body.modal-open .cursor{
+    z-index:40000;
+    width:10px;height:10px;
+    mix-blend-mode:difference;
+    filter:drop-shadow(0 0 6px rgba(0,0,0,0.35));
+  }
+  /* FIX: light mode was too gray -> make it solid/darker, still no stroke */
+  body:not(.dark).modal-open .cursor{
+    mix-blend-mode:normal;
+    background:#111;
+    filter:drop-shadow(0 0 10px rgba(0,0,0,0.55));
+  }
+
+  /* Loader (safe) */
+  .loader{position:fixed;inset:0;background:var(--bg);display:flex;justify-content:center;align-items:center;z-index:20000;transition:opacity .5s ease;}
+  .loader.hidden{opacity:0;pointer-events:none}
+  .loader span{width:60px;height:60px;border:4px solid var(--border);border-top:4px solid var(--accent);border-radius:50%;animation:spin 1s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* NAV */
+  nav{position:fixed;top:0;left:0;right:0;backdrop-filter:blur(10px);background:rgba(255,255,255,0.6);border-bottom:1px solid var(--border);z-index:1000;}
+  body.dark nav{background:rgba(0,0,0,0.6)}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;position:relative;}
+  .nav-links{margin:0 auto;display:flex;gap:30px;align-items:center;justify-content:center;}
+  .nav-links a{text-decoration:none;font-weight:800;color:var(--text);letter-spacing:.5px;text-transform:uppercase;position:relative;}
+  .nav-links a::after{content:"";position:absolute;left:0;bottom:-6px;height:2px;width:0;background:var(--accent);transition:.25s ease;}
+  .nav-links a:hover::after{width:100%;}
+
+  .toggle{position:absolute;right:20px;width:50px;height:26px}
+  .toggle input{display:none}
+  .slider{position:absolute;inset:0;background:#ccc;border-radius:50px;transition:.25s;outline:1px solid var(--border);}
+  .slider:before{content:"";position:absolute;height:20px;width:20px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.25s}
+  input:checked + .slider{background:var(--accent)}
+  input:checked + .slider:before{transform:translateX(24px);background:var(--bg)}
+
+  /* HERO */
+  .hero{min-height:45vh;display:flex;justify-content:center;align-items:center;text-align:center;padding:120px 20px 0 20px;}
+  .logo{display:flex;justify-content:center;align-items:center;transition:transform .35s cubic-bezier(0.175, 0.885, 0.32, 1.275);}
+  .logo:hover{transform:scale(1.06)}
+  .logo img{width:450px;max-width:90vw;height:auto;display:block;}
+
+  /* Widget */
+  .widget-section{max-width:1100px;margin:60px auto 0 auto;padding:20px;display:flex;flex-direction:column;align-items:center;gap:22px;opacity:0;transition:1s ease;}
+  .widget-section.reveal{opacity:1}
+  .copy-ip-container{display:flex;align-items:center;background:var(--card);padding:8px 20px;border-radius:50px;border:1px solid var(--border);transition:.25s;}
+  .copy-ip-container:hover{background:var(--border);transform:scale(1.04)}
+  .copy-ip-container span{font-weight:800;font-size:.95rem;}
+  .pulsing-dot{width:10px;height:10px;background:#00ff00;border-radius:50%;margin-right:12px;position:relative;}
+  .pulsing-dot::before{content:'';position:absolute;inset:0;border-radius:50%;animation:pulse 2s infinite;border:2px solid #00ff00;}
+  @keyframes pulse{0%{transform:scale(1);opacity:1}100%{transform:scale(3);opacity:0}}
+
+  /* Reveal */
+  section{opacity:0;transform:translateY(60px);transition:1s ease}
+  section.reveal{opacity:1;transform:translateY(0)}
+
+  .socials,.news,.youtube-section,.vip{padding:80px 20px;max-width:1100px;margin:auto}
+  h2{text-align:center;margin-bottom:50px;font-size:2rem}
+
+  /* Social buttons (icons restored) */
+  .socials-wrap{display:flex;justify-content:center;gap:14px;flex-wrap:wrap}
+  .social-btn{
+    background:var(--btn-bg);color:var(--btn-text);
+    padding:10px 18px;border-radius:50px;
+    display:flex;align-items:center;gap:10px;
+    font-size:.9rem;font-weight:800;
+    transition:.2s;border:1px solid var(--border);
+    text-decoration:none;
+  }
+  .social-btn:hover{transform:scale(1.06)}
+  .social-btn svg{width:18px;height:18px;display:block}
+
+  /* News */
+  .post-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:30px}
+
+  /* Boost Cup module */
+  .cup-banner{
+    max-width:1100px;
+    margin:0 auto 28px auto;
+    border:1px solid var(--border);
+    border-radius:18px;
+    background:var(--card);
+    backdrop-filter:blur(18px);
+    padding:16px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+  }
+  .cup-left{display:flex;align-items:center;gap:12px;min-width:0;}
+  .cup-img{width:110px;height:62px;border-radius:14px;object-fit:cover;border:1px solid var(--border);flex:0 0 auto;}
+  .cup-text{display:flex;flex-direction:column;gap:4px;min-width:0;}
+  .cup-title{font-weight:900;letter-spacing:.6px;text-transform:uppercase;font-size:.92rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .cup-sub{opacity:.85;font-weight:700;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .cup-join{
+    flex:0 0 auto;
+    background:var(--accent);
+    color:var(--bg);
+    border:none;
+    border-radius:999px;
+    padding:10px 16px;
+    font-weight:900;
+    letter-spacing:.4px;
+    text-transform:uppercase;
+    font-size:.78rem;
+    transition:.18s;
+    text-decoration:none;
+  }
+  .cup-join:hover{transform:scale(1.03)}
+
+  .post-card{
+    padding:30px;border-radius:20px;background:var(--card);backdrop-filter:blur(20px);
+    border:1px solid var(--border);overflow:hidden;max-height:240px;display:flex;flex-direction:column;
+    transition:max-height .35s ease;
+  }
+  .post-card.expanded{max-height:1200px}
+  .post-card h3{margin-bottom:10px}
+  .post-card .full-text{opacity:0;transition:.35s;pointer-events:none;height:0;}
+  .post-card.expanded .full-text{opacity:1;pointer-events:auto;height:auto;margin-top:15px;}
+  .expand-btn{margin:15px auto 0 auto;background:none;border:1px solid var(--border);color:var(--text);padding:6px 22px;border-radius:999px;font-size:.8rem;font-weight:800;transition:.2s;width:fit-content;}
+  .expand-btn:hover{background:var(--border);transform:scale(1.12)}
+  .news-bottom-actions{display:flex;justify-content:center;margin-top:30px}
+  .all-news-btn{background:none;border:1px solid var(--border);color:var(--text);padding:8px 18px;border-radius:999px;font-weight:900;text-decoration:none;transition:.2s}
+  .all-news-btn:hover{background:var(--border);transform:scale(1.06)}
+
+  /* Tags */
+  .tag-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+  .tag{
+    display:inline-flex;align-items:center;
+    padding:6px 10px;border-radius:999px;
+    border:1px solid var(--border);
+    background:rgba(255,255,255,0.22);
+    font-weight:900;letter-spacing:.5px;text-transform:uppercase;
+    font-size:.72rem;opacity:.9;
+  }
+  body.dark .tag{background:rgba(0,0,0,0.22);}
+
+  /* Video */
+  .video-container{position:relative;padding-bottom:56.25%;height:0;overflow:hidden;max-width:900px;margin:0 auto;border-radius:20px;border:1px solid var(--border);}
+  .video-container iframe{position:absolute;top:0;left:0;width:100%;height:100%;}
+  .video-fallback{margin-top:14px;text-align:center;opacity:.85}
+  .video-fallback a{color:var(--text)}
+
+  /* VIP */
+  .vip-packages{display:flex;justify-content:center;flex-wrap:wrap;gap:40px}
+  .vip-card{
+    width:320px;padding:40px 20px;border-radius:25px;
+    background:var(--card);
+    backdrop-filter:blur(22px);
+    border:1px solid var(--border);
+    text-align:center;display:flex;flex-direction:column;
+    position:relative;overflow:hidden;
+  }
+  .vip-card button{height:55px;width:160px;align-self:center;margin-top:auto;border:none;border-radius:40px;background:var(--accent);color:var(--bg);font-weight:900;transition:.2s;}
+  .vip-card button:hover{transform:scale(1.03)}
+  .price{font-size:2.2rem;font-weight:900;margin:10px 0 16px 0}
+  .perks-list{margin-bottom:30px}
+  .perk-item{padding:12px 0;font-weight:800;text-transform:uppercase;font-size:.85rem;position:relative;}
+  .perk-item:not(:last-child)::after{content:"";position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:40px;height:1px;background:var(--border)}
+
+  /* VIP duration switch */
+  .vip-controls{display:flex;justify-content:center;margin:-30px 0 40px 0;}
+  .segmented{
+    display:inline-flex;
+    border-radius:999px;
+    padding:5px;
+    background:var(--card);
+    backdrop-filter:blur(16px);
+    box-shadow:inset 0 0 0 1px var(--border);
+  }
+  .segmented label{display:flex}
+  .segmented input{display:none}
+  .seg-btn{
+    min-width:120px;
+    text-align:center;
+    padding:10px 16px;
+    border-radius:999px;
+    font-weight:900;
+    letter-spacing:.6px;
+    text-transform:uppercase;
+    font-size:.78rem;
+    color:var(--text);
+    transition:background .18s ease, color .18s ease;
+    user-select:none;
+  }
+  .segmented input:checked + .seg-btn{
+    background:var(--accent);
+    color:var(--bg);
+  }
+
+  /* price/perk animation */
+  .price-anim{display:inline-block;transition:transform .22s ease, opacity .22s ease;}
+  .price-anim.bump{transform:translateY(-4px) scale(1.04);opacity:.95;}
+  .perk-item{transition:transform .22s ease, opacity .22s ease;}
+  .perk-item.perk-bump{transform:translateY(-2px);opacity:.96;}
+
+  /* Crypto bar (slower scroll) */
+  .crypto-bar{
+    overflow:hidden;
+    margin-top:80px;
+    border-top:1px solid var(--border);
+    border-bottom:1px solid var(--border);
+    padding:18px 0;
+  }
+  .crypto-bar-inner{
+    max-width:1100px;
+    margin:0 auto;
+    padding:0 20px;
+    display:flex;
+    align-items:center;
+    gap:18px;
+  }
+  .crypto-label{
+    font-weight:900;
+    letter-spacing:1.8px;
+    font-size:.85rem;
+    text-transform:uppercase;
+    white-space:nowrap;
+    opacity:.85;
+  }
+  .crypto-scroller{position:relative;flex:1;overflow:hidden;}
+  .crypto-scroller:hover .crypto-track{animation-play-state:paused;}
+  .crypto-track{display:flex;width:max-content;will-change:transform;animation:cryptoScroll 45s linear infinite;}
+  .crypto-item{padding:0 14px;font-weight:900;letter-spacing:2px;font-size:1rem;color:var(--accent);white-space:nowrap;opacity:.9;}
+  .crypto-sep{padding:0 10px;opacity:.35;font-weight:900;user-select:none;}
+  @keyframes cryptoScroll{from{transform:translateX(0);}to{transform:translateX(-50%);} }
+
+  footer{text-align:center;padding:40px;margin-top:80px;border-top:1px solid var(--border)}
+
+  /* =========================
+     VIP Checkout Modal (Older layout)
+     ========================= */
+  .modal-backdrop{
+    position:fixed;inset:0;
+    background:rgba(0,0,0,0.55);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:30000;
+    padding:18px;
+    backdrop-filter:blur(10px);
+  }
+  .modal-backdrop.show{display:flex}
+
+  .modal{
+    width:min(760px, 100%);
+    border-radius:22px;
+    border:1px solid var(--border);
+    background:var(--card);
+    backdrop-filter:blur(24px);
+    box-shadow:0 20px 70px rgba(0,0,0,0.35);
+    overflow:hidden;
+    transform:translateY(14px) scale(.985);
+    opacity:0;
+    transition:transform .22s ease, opacity .22s ease;
+    position:relative;
+    color:var(--text);
+  }
+  .modal-backdrop.show .modal{transform:translateY(0) scale(1);opacity:1;}
+  .modal *{cursor:none !important;}
+
+  .modal-header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 18px;
+    border-bottom:1px solid var(--border);
+  }
+  .modal-title{
+    display:flex;flex-direction:column;gap:2px;
+    font-weight:900;letter-spacing:.4px;
+  }
+  .modal-title small{opacity:.75;font-weight:700}
+  .modal-close{
+    border:1px solid var(--border);
+    background:transparent;
+    color:var(--text);
+    width:40px;height:40px;border-radius:12px;
+    font-weight:900;
+    transition:.18s;
+  }
+  .modal-close:hover{background:var(--border);transform:scale(1.03)}
+
+  .modal-body{padding:18px}
+  .modal-grid{display:grid;grid-template-columns: 1.05fr .95fr;gap:14px;}
+  @media(max-width:820px){.modal-grid{grid-template-columns:1fr}}
+
+  .panel{
+    border:1px solid var(--border);
+    border-radius:18px;
+    background:rgba(255,255,255,0.12);
+    padding:14px;
+  }
+  body.dark .panel{background:rgba(0,0,0,0.20);}
+  .panel h4{font-size:.95rem;font-weight:900;letter-spacing:.6px;text-transform:uppercase;margin-bottom:10px}
+  .hint{opacity:.75;font-size:.9rem;line-height:1.35}
+
+  .crypto-options{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 12px}
+  .chip{
+    border:1px solid var(--border);
+    background:transparent;
+    color:var(--text);
+    padding:10px 12px;
+    border-radius:999px;
+    font-weight:900;
+    letter-spacing:.6px;
+    transition:.18s;
+  }
+  .chip:hover{background:var(--border);transform:scale(1.02)}
+  .chip.active{background:var(--accent);color:var(--bg);}
+
+  .field{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .label{font-weight:900;letter-spacing:.4px;text-transform:uppercase;font-size:.78rem;opacity:.9}
+  .input, .textarea{
+    border:1px solid var(--border);
+    background:rgba(255,255,255,0.15);
+    color:var(--text);
+    border-radius:14px;
+    padding:12px 12px;
+    outline:none;
+    font-weight:700;
+  }
+  body.dark .input, body.dark .textarea{background:rgba(0,0,0,0.25);}
+  .row{display:flex;gap:10px;align-items:center}
+  .row .input{flex:1}
+
+  .mini-btn{
+    border:none;border-radius:14px;
+    background:var(--accent);
+    color:var(--bg);
+    padding:12px 14px;
+    font-weight:900;
+    transition:.18s;
+  }
+  .mini-btn:hover{transform:scale(1.02)}
+  .mini-btn.secondary{
+    background:transparent;color:var(--text);
+    border:1px solid var(--border);
+  }
+  .mini-btn.secondary:hover{background:var(--border)}
+
+  .qr-box{
+    display:flex;align-items:center;justify-content:center;
+    border:1px dashed var(--border);
+    border-radius:18px;
+    padding:12px;
+    min-height:180px;
+    background:rgba(255,255,255,0.10);
+  }
+  body.dark .qr-box{background:rgba(0,0,0,0.18);}
+  .qr-img{width:180px;height:180px;border-radius:14px;border:1px solid var(--border);}
+
+  .accordion{
+    border:1px solid var(--border);
+    border-radius:16px;
+    overflow:hidden;
+    margin-top:12px;
+  }
+  .acc-head{
+    width:100%;
+    display:flex;justify-content:space-between;align-items:center;
+    padding:12px 12px;
+    background:transparent;
+    color:var(--text);
+    border:none;
+    font-weight:900;
+    letter-spacing:.5px;
+    text-transform:uppercase;
+    font-size:.82rem;
+  }
+  .acc-head:hover{background:var(--border)}
+  .acc-body{
+    max-height:0;
+    overflow:hidden;
+    transition:max-height .22s ease;
+    border-top:1px solid var(--border);
+    background:rgba(255,255,255,0.10);
+  }
+  body.dark .acc-body{background:rgba(0,0,0,0.18);}
+  .acc-body-inner{padding:12px;font-weight:700;opacity:.9;line-height:1.45}
+  .acc-open .acc-body{max-height:220px}
+
+  .paid-wrap{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+  .success{
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:12px;
+    background:rgba(255,255,255,0.10);
+  }
+  body.dark .success{background:rgba(0,0,0,0.18);}
+  .success strong{font-weight:900}
+</style>
+</head>
+<body>
+
+<canvas class="trail-canvas" id="trail"></canvas>
+<div class="loader" id="loader"><span></span></div>
+<div class="cursor" id="cursor"></div>
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-links">
+      <a href="index.html">HOME</a>
+      <a href="#vip">VIP</a>
+      <a href="news.html">NEWS</a>
+    </div>
+    <label class="toggle" aria-label="Toggle dark mode">
+      <input type="checkbox" id="themeToggle">
+      <span class="slider"></span>
+    </label>
+  </div>
+</nav>
+
+<section class="hero" style="opacity:1; transform:none;">
+  <div class="logo">
+    <img src="logo_black.png" id="theme-logo" alt="SHANTAJ Logo">
+  </div>
+</section>
+
+<div class="widget-section reveal-on-scroll">
+  <div class="copy-ip-container" onclick="copyIP()">
+    <div class="pulsing-dot"></div>
+    <span id="ipText">45.144.155.103:27026</span>
+    <small style="opacity:0.6; margin-left:10px;">(Click to Copy)</small>
+  </div>
+  <a href="https://tsarvar.com/servers/counter-strike-1.6/45.144.155.103:27026" data-tsarvarServerId="375206">сървър [HNS] SHANTAJ # BOOST</a>
+  <script type="text/javascript" charset="utf-8" src="https://widget.tsarvar.com/load.js?v=2"></script>
+  <script type="text/javascript">
+    (function(k){
+      const isDark = document.body.classList.contains('dark') || localStorage.getItem('theme') === 'dark';
+      (window[k]||(window[k]=[])).push({
+        element:'*[data-tsarvarServerId="375206"]',
+        serverId:375206, serverIp:'45.144.155.103', serverPort:27026,
+        blackMode: isDark
+      });
+    })('TsarvarWidgetQueue');
+  </script>
+</div>
+
+<section class="socials reveal-on-scroll" id="socials">
+  <h2>Socials</h2>
+  <div class="socials-wrap">
+    <a class="social-btn" href="https://discord.gg/hWXEDVZafw" target="_blank" rel="noopener">
+      <svg viewBox="0 0 127.14 96.36" fill="currentColor" aria-hidden="true">
+        <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.06,72.06,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.71,32.65-1.82,56.6.39,80.21a105.73,105.73,0,0,0,32.17,16.15,77.7,77.7,0,0,0,6.89-11.11,68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1,105.25,105.25,0,0,0,32.19-16.14c2.72-27.35-4.57-51.13-19.34-72.14ZM42.45,65.69C36.18,65.69,31,60,31,53s5.08-12.71,11.41-12.71,11.52,5.76,11.52,12.71S48.81,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5.08-12.71,11.44-12.71,11.52,5.76,11.52,12.71S88.77,65.69,84.69,65.69Z"/>
+      </svg>
+      <span>Discord</span>
+    </a>
+
+    <a class="social-btn" href="https://www.youtube.com/@shantajhns" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M21.58 7.19a2.51 2.51 0 0 0-1.77-1.77C18.25 5 12 5 12 5s-6.25 0-7.81.42A2.51 2.51 0 0 0 2.42 7.2 26.6 26.6 0 0 0 2 12a26.6 26.6 0 0 0 .42 4.81 2.51 2.51 0 0 0 1.77 1.77C5.75 19 12 19 12 19s6.25 0 7.81-.42a2.51 2.51 0 0 0 1.77-1.77A26.6 26.6 0 0 0 22 12a26.6 26.6 0 0 0-.42-4.81ZM10 15.5v-7l6 3.5-6 3.5Z"/>
+      </svg>
+      <span>YouTube</span>
+    </a>
+
+    <a class="social-btn" href="http://tiktok.com/@shantaj_hns" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M16.5 3c.6 2.7 2.3 4.4 5 5v4.1c-1.8 0-3.3-.5-4.7-1.4v6.6c0 3.7-3 6.7-6.7 6.7S3.4 21 3.4 17.3c0-3.6 2.9-6.6 6.6-6.6.4 0 .8 0 1.2.1v4.3c-.3-.1-.6-.2-1-.2-1.4 0-2.5 1.1-2.5 2.4 0 1.4 1.1 2.5 2.5 2.5s2.6-1.1 2.6-2.5V3h3.7Z"/>
+      </svg>
+      <span>TikTok</span>
+    </a>
+  </div>
+</section>
+
+<section class="news reveal-on-scroll" id="news">
+  <h2>Latest News</h2>
+
+  <div class="cup-banner">
+    <div class="cup-left">
+      <img class="cup-img" src="motd-wintercup.png" alt="Winter Cup" />
+      <div class="cup-text">
+        <div class="cup-title">SHANTAJ 3V3 WINTER BOOST CUP</div>
+        <div class="cup-sub">Follow updates & registration in Discord</div>
+      </div>
+    </div>
+    <a class="cup-join" href="https://discord.gg/hWXEDVZafw" target="_blank" rel="noopener">JOIN</a>
+  </div>
+
+  <div class="post-grid" id="newsGrid"></div>
+  <div class="news-bottom-actions">
+    <a class="all-news-btn" href="news.html">View all news</a>
+  </div>
+</section>
+
+<section class="youtube-section reveal-on-scroll">
+  <div class="video-container">
+    <iframe id="ytEmbed" title="YouTube video player" frameborder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      allowfullscreen></iframe>
+  </div>
+  <div class="video-fallback">
+    If the embed errors, the video is likely restricted from embedding. Open on YouTube:
+    <a href="https://www.youtube.com/watch?v=yEcdGXJPku0" target="_blank" rel="noopener">Watch</a>
+  </div>
+</section>
+
+<section class="vip reveal-on-scroll" id="vip">
+  <h2>VIP Packages</h2>
+
+  <div class="vip-controls" aria-label="VIP duration selector">
+    <div class="segmented" role="radiogroup" aria-label="VIP duration">
+      <label>
+        <input type="radio" name="vipDuration" value="1" checked>
+        <span class="seg-btn">Monthly</span>
+      </label>
+      <label>
+        <input type="radio" name="vipDuration" value="3">
+        <span class="seg-btn">3 Months</span>
+      </label>
+      <label>
+        <input type="radio" name="vipDuration" value="6">
+        <span class="seg-btn">6 Months</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="vip-packages">
+    <div class="vip-card" data-plan="vip">
+      <h3>Basic VIP</h3>
+      <div class="price"><span class="price-anim" id="priceVip">€5</span></div>
+      <div class="perks-list" id="perksVip">
+        <div class="perk-item">1000 Coins</div>
+        <div class="perk-item">Custom Green Prefix</div>
+        <div class="perk-item">Custom Chat Color</div>
+        <div class="perk-item">Revive in SPEC</div>
+        <div class="perk-item">Immunity from Gags</div>
+        <div class="perk-item">Access to BOOST Bot</div>
+        <div class="perk-item">2X Coins from Mixes</div>
+        <div class="perk-item">Open kei6 in MIX</div>
+      </div>
+      <button type="button" class="buy-btn" data-plan="vip">Get VIP</button>
+    </div>
+
+    <div class="vip-card" data-plan="vipplus">
+      <h3>VIP+</h3>
+      <div class="price"><span class="price-anim" id="priceVipPlus">€10</span></div>
+      <div class="perks-list" id="perksVipPlus">
+        <div class="perk-item">2500 Coins</div>
+        <div class="perk-item">Custom Green Prefix</div>
+        <div class="perk-item">Custom Chat Color</div>
+        <div class="perk-item">Revive in SPEC</div>
+        <div class="perk-item">Immunity from Gags</div>
+        <div class="perk-item">Access to BOOST Bot</div>
+        <div class="perk-item">2X Coins from Mixes</div>
+        <div class="perk-item">Open kei6 in MIX</div>
+        <div class="perk-item" style="color:gold;font-weight:900;">SERVER WATCHER</div>
+      </div>
+      <button type="button" class="buy-btn" data-plan="vipplus">Go VIP+</button>
+    </div>
+  </div>
+
+  <div class="crypto-bar">
+    <div class="crypto-bar-inner">
+      <div class="crypto-label">PAY WITH:</div>
+      <div class="crypto-scroller" aria-label="Accepted crypto payments">
+        <div class="crypto-track" id="cryptoTrack"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>© 2026 SHANTAJ</footer>
+
+<!-- VIP Checkout Modal -->
+<div class="modal-backdrop" id="vipModalBackdrop" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="vipModalTitle">
+    <div class="modal-header">
+      <div class="modal-title" id="vipModalTitle">
+        <div id="vipModalPlanLine">VIP Checkout</div>
+        <small id="vipModalSubLine">Choose a crypto payment method</small>
+      </div>
+      <button class="modal-close" id="vipModalClose" type="button" aria-label="Close">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="modal-grid">
+        <div class="panel">
+          <h4>1) Choose crypto</h4>
+          <div class="crypto-options" id="cryptoOptions"></div>
+
+          <div class="field">
+            <div class="label">Wallet address</div>
+            <div class="row">
+              <input class="input" id="walletAddress" readonly value="" />
+              <button class="mini-btn secondary" id="copyWalletBtn" type="button">Copy</button>
+            </div>
+            <div class="hint">Send the exact amount shown for your selected package.</div>
+          </div>
+
+          <div class="field">
+            <div class="label">SteamID</div>
+            <input class="input" id="steamIdInput" placeholder="STEAM_0:1:1234567 or SteamID64" />
+          </div>
+
+          <div class="accordion" id="howToAccordion">
+            <button class="acc-head" type="button" id="howToBtn">
+              <span>How to get</span>
+              <span id="howToIcon">+</span>
+            </button>
+            <div class="acc-body">
+              <div class="acc-body-inner">
+                Go to any server, write <b>status</b> in the console and copy your SteamID from there.
+              </div>
+            </div>
+          </div>
+
+          <div class="paid-wrap">
+            <button class="mini-btn" id="paidBtn" type="button">I paid</button>
+
+            <div id="paidSection" style="display:none;">
+              <div class="success">
+                <strong>Thank you for supporting us.</strong><br>
+                Your VIP will be delivered in the next <b>12 hours</b>.
+              </div>
+
+              <div class="field">
+                <div class="label">Transaction ID (optional but recommended)</div>
+                <div class="row">
+                  <input class="input" id="txIdInput" placeholder="Paste your TXID here..." />
+                  <button class="mini-btn secondary" id="copyTxBtn" type="button">Copy</button>
+                </div>
+                <div class="hint">Keep this for proof if anything goes wrong.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h4>2) QR Code</h4>
+          <div class="qr-box">
+            <img class="qr-img" id="qrImg" alt="QR code" />
+          </div>
+
+          <div class="field">
+            <div class="label">Selected package</div>
+            <input class="input" id="selectedPackage" readonly />
+          </div>
+
+          <div class="field">
+            <div class="label">Amount</div>
+            <input class="input" id="selectedAmount" readonly />
+          </div>
+
+          <div class="hint" style="margin-top:8px;">
+            Tip: On mobile, scan the QR code directly from your wallet app.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* Loader failsafe */
+  (function(){
+    const el = document.getElementById('loader');
+    function hide(){
+      if(!el) return;
+      el.classList.add('hidden');
+      setTimeout(()=>{ try{el.remove()}catch(e){} }, 650);
+    }
+    window.addEventListener('load', hide, { once:true });
+    document.addEventListener('DOMContentLoaded', hide, { once:true });
+    setTimeout(hide, 1600);
+  })();
+
+  /* Theme */
+  const themeLogo=document.getElementById('theme-logo');
+  const themeToggle=document.getElementById('themeToggle');
+  if(localStorage.getItem('theme')==='dark'){
+    document.body.classList.add('dark');
+    themeToggle.checked=true;
+    themeLogo.src='logo_white.png';
+  }
+  themeToggle.addEventListener('change',()=>{
+    document.body.classList.toggle('dark');
+    const mode=document.body.classList.contains('dark')?'dark':'light';
+    localStorage.setItem('theme',mode);
+    themeLogo.src = mode==='dark' ? 'logo_white.png' : 'logo_black.png';
+    location.reload();
+  });
+
+  /* Copy IP */
+  function copyIP(){
+    const ip="45.144.155.103:27026";
+    navigator.clipboard.writeText(ip);
+    const text=document.getElementById('ipText');
+    text.innerText='COPIED!';
+    setTimeout(()=>text.innerText=ip,2000);
+  }
+  window.copyIP=copyIP;
+
+  /* Reveal */
+  const observer=new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{ if(entry.isIntersecting){ entry.target.classList.add('reveal'); } });
+  },{threshold:0.1});
+  document.querySelectorAll('.reveal-on-scroll').forEach(el=>observer.observe(el));
+
+  /* Cursor dot */
+  const cursor=document.getElementById('cursor');
+  document.addEventListener('mousemove',e=>{ cursor.style.left=e.clientX+'px'; cursor.style.top=e.clientY+'px'; });
+
+  /* Trail dots */
+  const canvas = document.getElementById('trail');
+  const ctx = canvas.getContext('2d');
+  function resizeTrail(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  resizeTrail(); window.addEventListener('resize', resizeTrail);
+
+  const dots = [];
+  const MAX_DOTS = 110;
+  const LIFE_MS = 160;
+  const HEAD_R = 2.6;
+  const TAIL_R = 0.18;
+  const STEP = 2.6;
+  function accent(){ return getComputedStyle(document.body).getPropertyValue('--accent').trim() || '#111'; }
+  let lastX=null,lastY=null;
+
+  document.addEventListener('mousemove',(e)=>{
+    const now = performance.now();
+    if(lastX===null){ lastX=e.clientX; lastY=e.clientY; }
+    const dx=e.clientX-lastX, dy=e.clientY-lastY;
+    const dist=Math.hypot(dx,dy);
+    const steps=Math.max(1, Math.floor(dist/STEP));
+    for(let i=1;i<=steps;i++){
+      const t=i/steps;
+      dots.push({ x:lastX+dx*t, y:lastY+dy*t, t:now });
+    }
+    lastX=e.clientX; lastY=e.clientY;
+    while(dots.length>MAX_DOTS) dots.shift();
+  });
+
+  function drawDots(){
+    const now=performance.now();
+    while(dots.length && (now-dots[0].t)>LIFE_MS) dots.shift();
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    if(!dots.length){ requestAnimationFrame(drawDots); return; }
+    ctx.fillStyle = accent();
+    const n=dots.length;
+    for(let i=0;i<n;i++){
+      const headness = i/(n-1 || 1);
+      const age = (now-dots[i].t)/LIFE_MS;
+      const r = TAIL_R + (HEAD_R-TAIL_R)*headness;
+      const alpha = Math.max(0, 1 - (age*age));
+      ctx.globalAlpha = alpha;
+      ctx.beginPath();
+      ctx.arc(dots[i].x, dots[i].y, r, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(drawDots);
+  }
+  requestAnimationFrame(drawDots);
+
+  /* YouTube embed */
+  const yt=document.getElementById('ytEmbed');
+  try{
+    const origin=encodeURIComponent(window.location.origin);
+    yt.src=`https://www.youtube-nocookie.com/embed/yEcdGXJPku0?rel=0&modestbranding=1&playsinline=1&origin=${origin}`;
+  }catch(e){
+    yt.src='https://www.youtube-nocookie.com/embed/yEcdGXJPku0?rel=0&modestbranding=1&playsinline=1';
+  }
+
+  /* News (latest 3) */
+  const NEWS = [
+    { id:'cup', tag:'Event', title:'SHANTAJ 3v3 WINTER BOOST CUP', teaser:'Tournament announcement is live.', body:'Register in Discord. More info and brackets will be posted soon.' },
+    { id:'1.4', tag:'Update', title:'Update 1.4 Released', teaser:'Optimized server performance. Click to read more.', body:'This update includes a brand new anti-cheat system and smoother movement.' },
+    { id:'vip-perks', tag:'VIP', title:'New VIP Perks', teaser:'New features added for all VIP members!', body:'VIP members now have access to custom knife skins and trails.' },
+    { id:'fix', tag:'Fix', title:'Hotfix Applied', teaser:'Small fixes and improvements.', body:'Fixed minor map exploits and improved spectator stability.' },
+  ];
+  function tagChip(tag){ return `<div class="tag">${String(tag||'Update').toUpperCase()}</div>`; }
+  function renderNews(cards){
+    const grid = document.getElementById('newsGrid');
+    grid.innerHTML='';
+    cards.forEach(n=>{
+      const card=document.createElement('div');
+      card.className='post-card';
+      card.innerHTML=`
+        <div class="tag-row">${tagChip(n.tag)}</div>
+        <h3>${n.title}</h3>
+        <p>${n.teaser}</p>
+        <div class="full-text">${n.body}</div>
+        <button class="expand-btn" type="button">Expand</button>
+      `;
+      const btn=card.querySelector('button');
+      btn.addEventListener('click',()=>{
+        card.classList.toggle('expanded');
+        btn.innerText=card.classList.contains('expanded')?'Hide':'Expand';
+      });
+      grid.appendChild(card);
+    });
+  }
+  renderNews(NEWS.slice(0,3));
+
+  /* Crypto bar builder (infinite) - MUST MATCH MODULE CRYPTOS */
+  (function(){
+    const track = document.getElementById('cryptoTrack');
+    if(!track) return;
+    const coins = ["BITCOIN","ETHEREUM","USDT","TRON","LITECOIN","SOLANA"];
+    function buildOnce(){
+      const frag = document.createDocumentFragment();
+      coins.forEach((c) => {
+        const item = document.createElement('div');
+        item.className = 'crypto-item';
+        item.textContent = c;
+        frag.appendChild(item);
+        const sep = document.createElement('div');
+        sep.className = 'crypto-sep';
+        sep.textContent = '•';
+        frag.appendChild(sep);
+      });
+      return frag;
+    }
+    track.innerHTML = '';
+    track.appendChild(buildOnce());
+    const baseHTML = track.innerHTML;
+    track.insertAdjacentHTML('beforeend', baseHTML);
+    let safety = 0;
+    while(track.scrollWidth < window.innerWidth * 2 && safety < 7){
+      track.insertAdjacentHTML('beforeend', baseHTML);
+      safety++;
+    }
+  })();
+
+  /* VIP duration pricing */
+  const PRICES = {
+    vip:    { 1: "€5",   3: "€12.5", 6: "€20" },
+    vipplus:{ 1: "€10",  3: "€25",   6: "€40" }
+  };
+  const priceVip = document.getElementById('priceVip');
+  const priceVipPlus = document.getElementById('priceVipPlus');
+
+  function bump(el){
+    el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
+    setTimeout(()=>el.classList.remove('bump'), 220);
+  }
+  function bumpPerks(listId){
+    const items = document.querySelectorAll(`#${listId} .perk-item`);
+    items.forEach((it, idx)=>{
+      setTimeout(()=>{
+        it.classList.add('perk-bump');
+        setTimeout(()=>it.classList.remove('perk-bump'), 220);
+      }, idx * 14);
+    });
+  }
+  function setDuration(months){
+    priceVip.textContent = PRICES.vip[months];
+    priceVipPlus.textContent = PRICES.vipplus[months];
+    bump(priceVip); bump(priceVipPlus);
+    bumpPerks('perksVip'); bumpPerks('perksVipPlus');
+  }
+  document.querySelectorAll('input[name="vipDuration"]').forEach(r=>{
+    r.addEventListener('change', (e)=> setDuration(Number(e.target.value)));
+  });
+  setDuration(1);
+
+  /* =========================
+     VIP Checkout Modal (JS)
+     ========================= */
+  const WALLETS = {
+    BTC:  "YOUR_BTC_ADDRESS_HERE",
+    ETH:  "YOUR_ETH_ADDRESS_HERE",
+    USDT: "YOUR_USDT_ADDRESS_HERE",
+    TRX:  "YOUR_TRX_ADDRESS_HERE",
+    LTC:  "YOUR_LTC_ADDRESS_HERE",
+    SOL:  "YOUR_SOL_ADDRESS_HERE"
+  };
+
+  const CRYPTOS = [
+    { key:"BTC",  label:"Bitcoin" },
+    { key:"ETH",  label:"Ethereum" },
+    { key:"USDT", label:"USDT" },
+    { key:"TRX",  label:"Tron" },
+    { key:"LTC",  label:"Litecoin" },
+    { key:"SOL",  label:"Solana" },
+  ];
+
+  const modalBackdrop = document.getElementById('vipModalBackdrop');
+  const modalClose = document.getElementById('vipModalClose');
+  const planLine = document.getElementById('vipModalPlanLine');
+  const subLine = document.getElementById('vipModalSubLine');
+  const cryptoOptions = document.getElementById('cryptoOptions');
+  const walletAddress = document.getElementById('walletAddress');
+  const copyWalletBtn = document.getElementById('copyWalletBtn');
+  const qrImg = document.getElementById('qrImg');
+  const selectedPackage = document.getElementById('selectedPackage');
+  const selectedAmount = document.getElementById('selectedAmount');
+  const steamIdInput = document.getElementById('steamIdInput');
+  const paidBtn = document.getElementById('paidBtn');
+  const paidSection = document.getElementById('paidSection');
+  const txIdInput = document.getElementById('txIdInput');
+  const copyTxBtn = document.getElementById('copyTxBtn');
+
+  const howAcc = document.getElementById('howToAccordion');
+  const howBtn = document.getElementById('howToBtn');
+  const howIcon = document.getElementById('howToIcon');
+
+  let currentPlan = "vip";
+  let currentMonths = 1;
+  let currentCrypto = "BTC";
+
+  function moneyFor(plan, months){
+    return plan === "vip" ? PRICES.vip[months] : PRICES.vipplus[months];
+  }
+  function planName(plan){
+    return plan === "vip" ? "Basic VIP" : "VIP+";
+  }
+  function getSelectedMonths(){
+    const checked = document.querySelector('input[name="vipDuration"]:checked');
+    return checked ? Number(checked.value) : 1;
+  }
+
+  function buildCryptoChips(){
+    cryptoOptions.innerHTML = "";
+    CRYPTOS.forEach(c=>{
+      const btn = document.createElement('button');
+      btn.type = "button";
+      btn.className = "chip" + (c.key === currentCrypto ? " active" : "");
+      btn.dataset.crypto = c.key;
+      btn.textContent = c.label;
+      btn.addEventListener('click', ()=> setCrypto(c.key));
+      cryptoOptions.appendChild(btn);
+    });
+  }
+
+  function setCrypto(key){
+    currentCrypto = key;
+    [...cryptoOptions.querySelectorAll('.chip')].forEach(ch=>{
+      ch.classList.toggle('active', ch.dataset.crypto === key);
+    });
+    const addr = WALLETS[key] || "";
+    walletAddress.value = addr;
+    const qrData = encodeURIComponent(addr || "SET_YOUR_WALLET_ADDRESS");
+    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${qrData}`;
+  }
+
+  function openModal(plan){
+    currentPlan = plan;
+    currentMonths = getSelectedMonths();
+
+    paidSection.style.display = "none";
+    txIdInput.value = "";
+    steamIdInput.value = "";
+    paidBtn.disabled = false;
+    paidBtn.textContent = "I paid";
+    paidBtn.style.opacity = "";
+
+    planLine.textContent = `${planName(currentPlan)} — ${currentMonths} ${currentMonths===1?'Month':'Months'}`;
+    subLine.textContent = `Select crypto & send ${moneyFor(currentPlan, currentMonths)}`;
+
+    selectedPackage.value = `${planName(currentPlan)} (${currentMonths} ${currentMonths===1?'month':'months'})`;
+    selectedAmount.value = moneyFor(currentPlan, currentMonths);
+
+    buildCryptoChips();
+    setCrypto(currentCrypto);
+
+    modalBackdrop.classList.add('show');
+    modalBackdrop.setAttribute('aria-hidden','false');
+    document.body.style.overflow = 'hidden';
+    document.body.classList.add('modal-open');
+  }
+
+  function closeModal(){
+    modalBackdrop.classList.remove('show');
+    modalBackdrop.setAttribute('aria-hidden','true');
+    document.body.style.overflow = '';
+    document.body.classList.remove('modal-open');
+  }
+
+  document.querySelectorAll('.buy-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=> openModal(btn.dataset.plan || 'vip'));
+  });
+
+  modalClose.addEventListener('click', closeModal);
+  modalBackdrop.addEventListener('click', (e)=>{ if(e.target === modalBackdrop) closeModal(); });
+  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && modalBackdrop.classList.contains('show')) closeModal(); });
+
+  copyWalletBtn.addEventListener('click', async ()=>{
+    try{
+      await navigator.clipboard.writeText(walletAddress.value);
+      copyWalletBtn.textContent = "Copied";
+      setTimeout(()=>copyWalletBtn.textContent="Copy", 900);
+    }catch(e){
+      copyWalletBtn.textContent = "Failed";
+      setTimeout(()=>copyWalletBtn.textContent="Copy", 900);
+    }
+  });
+
+  howBtn.addEventListener('click', ()=>{
+    howAcc.classList.toggle('acc-open');
+    howIcon.textContent = howAcc.classList.contains('acc-open') ? "–" : "+";
+  });
+
+  paidBtn.addEventListener('click', ()=>{
+    const steam = steamIdInput.value.trim();
+    if(!steam){
+      steamIdInput.focus();
+      steamIdInput.style.borderColor = "rgba(255,0,0,0.35)";
+      setTimeout(()=>steamIdInput.style.borderColor="", 900);
+      return;
+    }
+    paidSection.style.display = "block";
+    paidBtn.textContent = "Marked as paid";
+    paidBtn.disabled = true;
+    paidBtn.style.opacity = ".7";
+  });
+
+  copyTxBtn.addEventListener('click', async ()=>{
+    try{
+      await navigator.clipboard.writeText(txIdInput.value || "");
+      copyTxBtn.textContent = "Copied";
+      setTimeout(()=>copyTxBtn.textContent="Copy", 900);
+    }catch(e){
+      copyTxBtn.textContent = "Failed";
+      setTimeout(()=>copyTxBtn.textContent="Copy", 900);
+    }
+  });
+
+  document.querySelectorAll('input[name="vipDuration"]').forEach(r=>{
+    r.addEventListener('change', ()=>{
+      if(!modalBackdrop.classList.contains('show')) return;
+      currentMonths = getSelectedMonths();
+      planLine.textContent = `${planName(currentPlan)} — ${currentMonths} ${currentMonths===1?'Month':'Months'}`;
+      subLine.textContent = `Select crypto & send ${moneyFor(currentPlan, currentMonths)}`;
+      selectedPackage.value = `${planName(currentPlan)} (${currentMonths} ${currentMonths===1?'month':'months'})`;
+      selectedAmount.value = moneyFor(currentPlan, currentMonths);
+    });
+  });
+</script>
+</body>
+</html>
