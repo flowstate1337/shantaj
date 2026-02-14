@@ -933,6 +933,26 @@
   </div>
 </div>
 
+<!-- Orders POST bridge (hidden). Does not change UI. -->
+<iframe name="orderSink" id="orderSink" style="display:none;"></iframe>
+<form id="orderForm"
+  action="https://script.google.com/macros/s/AKfycby7RS9VRBFkj7zT5l_fLhAPTVHasLY97SCpJbZwdWFDaUo0c2YIxss0MJk3BFZgf3Qq/exec"
+  method="POST"
+  target="orderSink"
+  style="display:none;">
+  <input name="ts" id="orderTs" value="">
+  <input name="orderId" id="orderId" value="">
+  <input name="steamId" id="orderSteamId" value="">
+  <input name="plan" id="orderPlan" value="">
+  <input name="months" id="orderMonths" value="">
+  <input name="crypto" id="orderCrypto" value="">
+  <input name="amount" id="orderAmount" value="">
+  <input name="txid" id="orderTxid" value="">
+  <input name="theme" id="orderTheme" value="">
+  <input name="page" id="orderPage" value="">
+  <input name="ua" id="orderUa" value="">
+</form>
+
 <script>
   // NEWS
   const NEWS = [
@@ -1131,33 +1151,6 @@
   // VIP Checkout Modal
   // =========================
 
-  // Google Sheets Web App endpoint
-  const ORDERS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycby7RS9VRBFkj7zT5l_fLhAPTVHasLY97SCpJbZwdWFDaUo0c2YIxss0MJk3BFZgf3Qq/exec";
-
-  // Fire-and-forget submit (works well cross-origin)
-  function submitOrder(payload){
-    try{
-      const body = JSON.stringify(payload);
-
-      // Best-effort: sendBeacon (no CORS reading needed)
-      if(navigator.sendBeacon){
-        const blob = new Blob([body], { type: "application/json" });
-        const ok = navigator.sendBeacon(ORDERS_WEBAPP_URL, blob);
-        return Promise.resolve(!!ok);
-      }
-
-      // Fallback: fetch without CORS response access
-      return fetch(ORDERS_WEBAPP_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body
-      }).then(()=>true).catch(()=>false);
-    }catch(e){
-      return Promise.resolve(false);
-    }
-  }
-
   // Put your real addresses here:
   const WALLETS = {
     BTC:  "YOUR_BTC_ADDRESS_HERE",
@@ -1289,6 +1282,35 @@
     howIcon.textContent = howAcc.classList.contains('acc-open') ? "–" : "+";
   });
 
+  // ===== ORDER SUBMIT (ADDED) =====
+  function submitOrderToSheets(){
+    const form = document.getElementById('orderForm');
+    if(!form) return;
+
+    const months = getSelectedMonths();
+    const steam = steamIdInput.value.trim();
+    const txid = (txIdInput.value || "").trim();
+
+    const id = (crypto && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : (Date.now() + "-" + Math.random().toString(16).slice(2));
+
+    document.getElementById('orderTs').value = new Date().toISOString();
+    document.getElementById('orderId').value = id;
+    document.getElementById('orderSteamId').value = steam;
+    document.getElementById('orderPlan').value = planName(currentPlan);
+    document.getElementById('orderMonths').value = String(months);
+    document.getElementById('orderCrypto').value = currentCrypto;
+    document.getElementById('orderAmount').value = moneyFor(currentPlan, months);
+    document.getElementById('orderTxid').value = txid;
+    document.getElementById('orderTheme').value = document.body.classList.contains('dark') ? 'dark' : 'light';
+    document.getElementById('orderPage').value = location.href;
+    document.getElementById('orderUa').value = navigator.userAgent;
+
+    // Fire-and-forget submit (no CORS issues)
+    form.submit();
+  }
+
   paidBtn.addEventListener('click', ()=>{
     const steam = steamIdInput.value.trim();
     if(!steam){
@@ -1298,18 +1320,10 @@
       return;
     }
 
-    // Submit order to Google Sheets (best-effort, non-blocking)
-    submitOrder({
-      steamId: steam,
-      plan: planName(currentPlan),
-      months: String(currentMonths),
-      crypto: String(currentCrypto),
-      amount: String(moneyFor(currentPlan, currentMonths)),
-      txid: String((txIdInput.value || "").trim()),
-      page: String(location.href),
-      ua: String(navigator.userAgent || "")
-    });
+    // SEND ORDER TO GOOGLE SHEETS
+    submitOrderToSheets();
 
+    // Keep your existing UI behavior unchanged
     paidSection.style.display = "block";
     paidBtn.textContent = "Marked as paid";
     paidBtn.disabled = true;
