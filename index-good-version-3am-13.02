@@ -13,28 +13,20 @@
   :root{
     --bg:#ffffff;
     --text:#111;
-    --card:rgba(255,255,255,0.6);
-    --border:rgba(0,0,0,0.08);
+    --card:rgba(255,255,255,0.62);
+    --border:rgba(0,0,0,0.10);
     --accent:#111;
     --btn-bg:#111;
     --btn-text:#fff;
-
-    /* Winter Cup snow (light mode = black) */
-    --snow1: rgba(0,0,0,0.60);
-    --snow2: rgba(0,0,0,0.25);
   }
   body.dark{
     --bg:#0a0a0a;
     --text:#fff;
-    --card:rgba(255,255,255,0.05);
-    --border:rgba(255,255,255,0.08);
+    --card:rgba(255,255,255,0.06);
+    --border:rgba(255,255,255,0.10);
     --accent:#fff;
     --btn-bg:#fff;
     --btn-text:#111;
-
-    /* Winter Cup snow (dark mode = white) */
-    --snow1: rgba(255,255,255,0.85);
-    --snow2: rgba(255,255,255,0.32);
   }
 
   body{
@@ -43,44 +35,41 @@
     color:var(--text);
     transition:background .35s ease,color .35s ease;
     overflow-x:hidden;
-    position:relative;
-  }
-
-  /* Slick low-opacity background (rooftops-linework.png) */
-  body::before{
-    content:"";
-    position:fixed;
-    inset:0;
-    background:url('rooftops-linework.png') center/cover no-repeat;
-    opacity:0.06;
-    pointer-events:none;
-    z-index:0;
-    transform:translateZ(0) scale(1.05);
-  }
-  body.dark::before{
-    opacity:0.05;
-    filter:invert(1);
   }
 
   @media(max-width:768px){
     .cursor,.trail-canvas{display:none}
     .logo img{width:280px !important;}
     *{cursor:auto !important;}
-    .intro-backdrop{display:none !important;}
   }
 
   /* Cursor */
   .cursor{
-    position:fixed;width:8px;height:8px;border-radius:50%;
+    position:fixed;
+    width:8px;height:8px;
+    border-radius:50%;
     background:var(--accent);
     pointer-events:none;
-    transform:translate3d(-50%,-50%,0);
-    will-change: transform, left, top;
-    z-index:40000;
+    transform:translate(-50%,-50%);
+    z-index:10000;
   }
-  .trail-canvas{position:fixed;inset:0;pointer-events:none;z-index:39999;}
+  .trail-canvas{position:fixed;inset:0;pointer-events:none;z-index:9999;}
 
-  /* Loader */
+  /* Cursor: clear in modal (NO STROKE) */
+  body.modal-open .cursor{
+    z-index:40000;
+    width:10px;height:10px;
+    mix-blend-mode:difference;
+    filter:drop-shadow(0 0 6px rgba(0,0,0,0.35));
+  }
+  /* FIX: light mode was too gray -> make it solid/darker, still no stroke */
+  body:not(.dark).modal-open .cursor{
+    mix-blend-mode:normal;
+    background:#111;
+    filter:drop-shadow(0 0 10px rgba(0,0,0,0.55));
+  }
+
+  /* Loader (safe) */
   .loader{position:fixed;inset:0;background:var(--bg);display:flex;justify-content:center;align-items:center;z-index:20000;transition:opacity .5s ease;}
   .loader.hidden{opacity:0;pointer-events:none}
   .loader span{width:60px;height:60px;border:4px solid var(--border);border-top:4px solid var(--accent);border-radius:50%;animation:spin 1s linear infinite;}
@@ -103,18 +92,17 @@
   input:checked + .slider:before{transform:translateX(24px);background:var(--bg)}
 
   /* HERO */
-  .hero{min-height:45vh;display:flex;justify-content:center;align-items:center;text-align:center;padding:120px 20px 0 20px;position:relative;z-index:2;}
-  .logo{position:relative;display:flex;justify-content:center;align-items:center;transition:transform .35s cubic-bezier(0.175, 0.885, 0.32, 1.275);}
+  .hero{min-height:45vh;display:flex;justify-content:center;align-items:center;text-align:center;padding:120px 20px 0 20px;}
+  .logo{display:flex;justify-content:center;align-items:center;transition:transform .35s cubic-bezier(0.175, 0.885, 0.32, 1.275);}
   .logo:hover{transform:scale(1.06)}
   .logo img{width:450px;max-width:90vw;height:auto;display:block;}
 
   /* Widget */
-  .widget-section{max-width:1100px;margin:60px auto 0 auto;padding:20px;display:flex;flex-direction:column;align-items:center;gap:22px;opacity:0;transition:1s ease;position:relative;z-index:2;}
+  .widget-section{max-width:1100px;margin:60px auto 0 auto;padding:20px;display:flex;flex-direction:column;align-items:center;gap:22px;opacity:0;transition:1s ease;}
   .widget-section.reveal{opacity:1}
   .copy-ip-container{display:flex;align-items:center;background:var(--card);padding:8px 20px;border-radius:50px;border:1px solid var(--border);transition:.25s;}
   .copy-ip-container:hover{background:var(--border);transform:scale(1.04)}
   .copy-ip-container span{font-weight:800;font-size:.95rem;}
-
   .pulsing-dot{width:10px;height:10px;background:#00ff00;border-radius:50%;margin-right:12px;position:relative;}
   .pulsing-dot::before{content:'';position:absolute;inset:0;border-radius:50%;animation:pulse 2s infinite;border:2px solid #00ff00;}
   @keyframes pulse{0%{transform:scale(1);opacity:1}100%{transform:scale(3);opacity:0}}
@@ -123,19 +111,26 @@
   section{opacity:0;transform:translateY(60px);transition:1s ease}
   section.reveal{opacity:1;transform:translateY(0)}
 
-  .socials,.news,.youtube-section,.vip{padding:80px 20px;max-width:1100px;margin:auto;position:relative;z-index:2;}
+  .socials,.news,.youtube-section,.vip{padding:80px 20px;max-width:1100px;margin:auto}
   h2{text-align:center;margin-bottom:50px;font-size:2rem}
 
-  /* Social buttons */
+  /* Social buttons (icons restored) */
   .socials-wrap{display:flex;justify-content:center;gap:14px;flex-wrap:wrap}
-  .social-btn{background:var(--btn-bg);color:var(--btn-text);padding:10px 20px;border-radius:50px;display:flex;align-items:center;gap:10px;font-size:.9rem;font-weight:800;transition:.2s;border:1px solid var(--border);text-decoration:none;}
+  .social-btn{
+    background:var(--btn-bg);color:var(--btn-text);
+    padding:10px 18px;border-radius:50px;
+    display:flex;align-items:center;gap:10px;
+    font-size:.9rem;font-weight:800;
+    transition:.2s;border:1px solid var(--border);
+    text-decoration:none;
+  }
   .social-btn:hover{transform:scale(1.06)}
-  .social-btn svg{width:18px;height:18px}
+  .social-btn svg{width:18px;height:18px;display:block}
 
   /* News */
   .post-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:30px}
 
-  /* Boost Cup module under Latest News headline (static, join only) */
+  /* Boost Cup module */
   .cup-banner{
     max-width:1100px;
     margin:0 auto 28px auto;
@@ -148,10 +143,6 @@
     align-items:center;
     justify-content:space-between;
     gap:14px;
-
-    /* snow containment */
-    position:relative;
-    overflow:hidden;
   }
   .cup-left{display:flex;align-items:center;gap:12px;min-width:0;}
   .cup-img{width:110px;height:62px;border-radius:14px;object-fit:cover;border:1px solid var(--border);flex:0 0 auto;}
@@ -174,77 +165,13 @@
   }
   .cup-join:hover{transform:scale(1.03)}
 
-  /* Winter Cup snow overlay (inside module only) — slow, seamless infinite fall */
-  .cup-snow{
-    position:absolute;
-    inset:0;
-    pointer-events:none;
-    border-radius:inherit;
-    overflow:hidden;
-    z-index:0;
+  .post-card{
+    padding:30px;border-radius:20px;background:var(--card);backdrop-filter:blur(20px);
+    border:1px solid var(--border);overflow:hidden;max-height:240px;display:flex;flex-direction:column;
+    transition:max-height .35s ease;
   }
-
-  .snow-layer{
-    position:absolute;
-    top:0;left:0;
-    width:2px;height:2px;
-    border-radius:50%;
-    background:currentColor;
-    will-change:transform;
-  }
-  .snow-layer::after{
-    content:"";
-    position:absolute;
-    top:-240px; left:0;
-    width:inherit;height:inherit;
-    border-radius:inherit;
-    background:inherit;
-    box-shadow:inherit;
-  }
-
-  .snow-layer.s1{
-    color:var(--snow1);
-    opacity:.92;
-    animation: snowDropA 10s linear infinite;
-    box-shadow:
-      22px 18px, 74px 210px, 110px 92px, 165px 28px, 210px 140px, 265px 55px, 320px 200px, 365px 96px,
-      418px 24px, 470px 168px, 520px 78px, 575px 220px, 630px 44px, 690px 132px, 740px 18px, 795px 188px,
-      848px 70px, 905px 214px, 960px 36px, 1015px 156px, 1068px 92px,
-      48px 132px, 138px 172px, 246px 16px, 352px 146px, 446px 112px, 548px 26px, 656px 206px, 768px 114px,
-      882px 14px, 990px 204px;
-  }
-
-  .snow-layer.s2{
-    width:1px;height:1px;
-    color:var(--snow2);
-    opacity:.98;
-    animation: snowDropB 14s linear infinite;
-    box-shadow:
-      8px 60px, 38px 14px, 60px 154px, 96px 34px, 122px 210px, 150px 96px, 188px 170px, 214px 22px,
-      248px 120px, 286px 200px, 306px 58px, 340px 172px, 378px 18px, 402px 210px, 436px 84px, 468px 140px,
-      498px 30px, 532px 190px, 558px 110px, 590px 14px, 622px 160px, 648px 210px, 684px 62px, 708px 126px,
-      742px 22px, 776px 178px, 804px 98px, 836px 208px, 868px 34px, 898px 146px, 928px 14px, 960px 186px,
-      992px 108px, 1022px 210px, 1056px 58px, 1086px 170px;
-  }
-
-  @keyframes snowDropA{
-    from{ transform:translate3d(0,0,0); }
-    to  { transform:translate3d(0,240px,0); }
-  }
-  @keyframes snowDropB{
-    from{ transform:translate3d(0,0,0); }
-    to  { transform:translate3d(0,240px,0); }
-  }
-
-  .cup-left, .cup-join{ position:relative; z-index:1; }
-
-  @media (prefers-reduced-motion: reduce){
-    .snow-layer{ animation:none; }
-  }
-
-  .post-card{padding:30px;border-radius:20px;background:var(--card);backdrop-filter:blur(20px);border:1px solid var(--border);overflow:hidden;max-height:220px;display:flex;flex-direction:column;transition:max-height .35s ease;}
   .post-card.expanded{max-height:1200px}
-  .post-card h3{margin-bottom:12px}
+  .post-card h3{margin-bottom:10px}
   .post-card .full-text{opacity:0;transition:.35s;pointer-events:none;height:0;}
   .post-card.expanded .full-text{opacity:1;pointer-events:auto;height:auto;margin-top:15px;}
   .expand-btn{margin:15px auto 0 auto;background:none;border:1px solid var(--border);color:var(--text);padding:6px 22px;border-radius:999px;font-size:.8rem;font-weight:800;transition:.2s;width:fit-content;}
@@ -252,6 +179,18 @@
   .news-bottom-actions{display:flex;justify-content:center;margin-top:30px}
   .all-news-btn{background:none;border:1px solid var(--border);color:var(--text);padding:8px 18px;border-radius:999px;font-weight:900;text-decoration:none;transition:.2s}
   .all-news-btn:hover{background:var(--border);transform:scale(1.06)}
+
+  /* Tags */
+  .tag-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+  .tag{
+    display:inline-flex;align-items:center;
+    padding:6px 10px;border-radius:999px;
+    border:1px solid var(--border);
+    background:rgba(255,255,255,0.22);
+    font-weight:900;letter-spacing:.5px;text-transform:uppercase;
+    font-size:.72rem;opacity:.9;
+  }
+  body.dark .tag{background:rgba(0,0,0,0.22);}
 
   /* Video */
   .video-container{position:relative;padding-bottom:56.25%;height:0;overflow:hidden;max-width:900px;margin:0 auto;border-radius:20px;border:1px solid var(--border);}
@@ -261,9 +200,16 @@
 
   /* VIP */
   .vip-packages{display:flex;justify-content:center;flex-wrap:wrap;gap:40px}
-  .vip-card{width:320px;padding:40px 20px;border-radius:25px;background:var(--card);backdrop-filter:blur(25px);border:1px solid var(--border);text-align:center;display:flex;flex-direction:column;}
+  .vip-card{
+    width:320px;padding:40px 20px;border-radius:25px;
+    background:var(--card);
+    backdrop-filter:blur(22px);
+    border:1px solid var(--border);
+    text-align:center;display:flex;flex-direction:column;
+    position:relative;overflow:hidden;
+  }
   .vip-card button{height:55px;width:160px;align-self:center;margin-top:auto;border:none;border-radius:40px;background:var(--accent);color:var(--bg);font-weight:900;transition:.2s;}
-  .vip-card button:hover{transform:scale(1.05)}
+  .vip-card button:hover{transform:scale(1.03)}
   .price{font-size:2.2rem;font-weight:900;margin:10px 0 16px 0}
   .perks-list{margin-bottom:30px}
   .perk-item{padding:12px 0;font-weight:800;text-transform:uppercase;font-size:.85rem;position:relative;}
@@ -272,14 +218,12 @@
   /* VIP duration switch */
   .vip-controls{display:flex;justify-content:center;margin:-30px 0 40px 0;}
   .segmented{
-    position:relative;
     display:inline-flex;
     border-radius:999px;
     padding:5px;
     background:var(--card);
     backdrop-filter:blur(16px);
     box-shadow:inset 0 0 0 1px var(--border);
-    gap:0;
   }
   .segmented label{display:flex}
   .segmented input{display:none}
@@ -293,10 +237,9 @@
     text-transform:uppercase;
     font-size:.78rem;
     color:var(--text);
-    transition:transform .18s ease, background .18s ease, color .18s ease;
+    transition:background .18s ease, color .18s ease;
     user-select:none;
   }
-  .seg-btn:hover{transform:scale(1.02)}
   .segmented input:checked + .seg-btn{
     background:var(--accent);
     color:var(--bg);
@@ -304,11 +247,11 @@
 
   /* price/perk animation */
   .price-anim{display:inline-block;transition:transform .22s ease, opacity .22s ease;}
-  .price-anim.bump{transform:translateY(-4px) scale(1.04);opacity:.9;}
+  .price-anim.bump{transform:translateY(-4px) scale(1.04);opacity:.95;}
   .perk-item{transition:transform .22s ease, opacity .22s ease;}
-  .perk-item.perk-bump{transform:translateY(-2px);opacity:.92;}
+  .perk-item.perk-bump{transform:translateY(-2px);opacity:.96;}
 
-  /* Crypto bar */
+  /* Crypto bar (slower scroll) */
   .crypto-bar{
     overflow:hidden;
     margin-top:80px;
@@ -335,20 +278,14 @@
   .crypto-scroller{position:relative;flex:1;overflow:hidden;}
   .crypto-scroller:hover .crypto-track{animation-play-state:paused;}
   .crypto-track{display:flex;width:max-content;will-change:transform;animation:cryptoScroll 45s linear infinite;}
-  .crypto-item{padding:0 14px;font-weight:900;letter-spacing:2px;font-size:1rem;color:var(--accent);white-space:nowrap;opacity:.88;}
+  .crypto-item{padding:0 14px;font-weight:900;letter-spacing:2px;font-size:1rem;color:var(--accent);white-space:nowrap;opacity:.9;}
   .crypto-sep{padding:0 10px;opacity:.35;font-weight:900;user-select:none;}
-  @keyframes cryptoScroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
-  @media(max-width:520px){
-    .crypto-label{font-size:.78rem}
-    .crypto-track{animation-duration:38s}
-    .crypto-item{font-size:.92rem}
-    .seg-btn{min-width:98px}
-  }
+  @keyframes cryptoScroll{from{transform:translateX(0);}to{transform:translateX(-50%);} }
 
-  footer{text-align:center;padding:40px;margin-top:80px;border-top:1px solid var(--border);position:relative;z-index:2;}
+  footer{text-align:center;padding:40px;margin-top:80px;border-top:1px solid var(--border)}
 
   /* =========================
-     VIP Checkout Modal
+     VIP Checkout Modal (Older layout)
      ========================= */
   .modal-backdrop{
     position:fixed;inset:0;
@@ -374,29 +311,10 @@
     opacity:0;
     transition:transform .22s ease, opacity .22s ease;
     position:relative;
+    color:var(--text);
   }
-
-  /* Make LIGHT MODE glass look a bit brighter */
-  body:not(.dark) .modal{
-    background:linear-gradient(180deg, rgba(255,255,255,0.88), rgba(255,255,255,0.66));
-    box-shadow:
-      0 28px 90px rgba(0,0,0,0.18),
-      inset 0 1px 0 rgba(255,255,255,0.85);
-  }
-  body:not(.dark) .panel{
-    background:linear-gradient(180deg, rgba(255,255,255,0.68), rgba(255,255,255,0.40));
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.78);
-  }
-  body:not(.dark) .input, body:not(.dark) .textarea{
-    background:rgba(255,255,255,0.70);
-  }
-
   .modal-backdrop.show .modal{transform:translateY(0) scale(1);opacity:1;}
-
-  /* keep dot cursor in modal; allow I-beam for inputs */
-  .modal, .modal *{cursor:none !important;}
-  .modal input, .modal textarea{cursor:text !important;}
-  .modal button{cursor:pointer !important;}
+  .modal *{cursor:none !important;}
 
   .modal-header{
     display:flex;align-items:center;justify-content:space-between;
@@ -419,14 +337,8 @@
   .modal-close:hover{background:var(--border);transform:scale(1.03)}
 
   .modal-body{padding:18px}
-  .modal-grid{
-    display:grid;
-    grid-template-columns: 1.05fr .95fr;
-    gap:14px;
-  }
-  @media(max-width:820px){
-    .modal-grid{grid-template-columns:1fr}
-  }
+  .modal-grid{display:grid;grid-template-columns: 1.05fr .95fr;gap:14px;}
+  @media(max-width:820px){.modal-grid{grid-template-columns:1fr}}
 
   .panel{
     border:1px solid var(--border);
@@ -435,7 +347,6 @@
     padding:14px;
   }
   body.dark .panel{background:rgba(0,0,0,0.20);}
-
   .panel h4{font-size:.95rem;font-weight:900;letter-spacing:.6px;text-transform:uppercase;margin-bottom:10px}
   .hint{opacity:.75;font-size:.9rem;line-height:1.35}
 
@@ -492,10 +403,8 @@
     background:rgba(255,255,255,0.10);
   }
   body.dark .qr-box{background:rgba(0,0,0,0.18);}
-  body:not(.dark) .qr-box{background:rgba(255,255,255,0.38);}
   .qr-img{width:180px;height:180px;border-radius:14px;border:1px solid var(--border);}
 
-  /* How to get accordion */
   .accordion{
     border:1px solid var(--border);
     border-radius:16px;
@@ -523,11 +432,9 @@
     background:rgba(255,255,255,0.10);
   }
   body.dark .acc-body{background:rgba(0,0,0,0.18);}
-  body:not(.dark) .acc-body{background:rgba(255,255,255,0.42);}
   .acc-body-inner{padding:12px;font-weight:700;opacity:.9;line-height:1.45}
   .acc-open .acc-body{max-height:220px}
 
-  /* Paid section */
   .paid-wrap{display:flex;flex-direction:column;gap:10px;margin-top:12px}
   .success{
     border:1px solid var(--border);
@@ -536,153 +443,13 @@
     background:rgba(255,255,255,0.10);
   }
   body.dark .success{background:rgba(0,0,0,0.18);}
-  body:not(.dark) .success{background:rgba(255,255,255,0.46);}
   .success strong{font-weight:900}
-
-  /* =========================
-     Loading intro (1s)
-     Only grenade
-     ========================= */
-  .intro-backdrop{
-    position:fixed;inset:0;
-    display:flex;align-items:center;justify-content:center;
-    background:rgba(255,255,255,0.55);
-    backdrop-filter:blur(10px);
-    z-index:25000;
-    opacity:1;
-    transition:opacity .25s ease;
-    pointer-events:auto;
-  }
-  body.dark .intro-backdrop{background:rgba(0,0,0,0.55);}
-  .intro-backdrop.hide{opacity:0;pointer-events:none;}
-
-  .intro-card{
-    width:min(520px, 92vw);
-    border-radius:18px;
-    border:1px solid var(--border);
-    background:rgba(255,255,255,0.55);
-    backdrop-filter:blur(18px);
-    padding:14px 14px;
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-    align-items:center;
-    box-shadow:0 18px 60px rgba(0,0,0,0.14);
-  }
-  body.dark .intro-card{
-    background:rgba(255,255,255,0.08);
-    box-shadow:0 18px 70px rgba(0,0,0,0.35);
-  }
-
-  .intro-title{
-    font-weight:900;
-    letter-spacing:1.8px;
-    text-transform:uppercase;
-    font-size:.78rem;
-    opacity:.9;
-  }
-
-  .intro-track{
-    width:100%;
-    height:64px;
-    border-radius:14px;
-    border:1px solid var(--border);
-    background:rgba(255,255,255,0.22);
-    position:relative;
-    overflow:hidden;
-  }
-  body.dark .intro-track{background:rgba(255,255,255,0.06);}
-
-  .intro-line{
-    position:absolute;left:16px;right:16px;top:50%;
-    height:2px;transform:translateY(-50%);
-    background:var(--border);
-  }
-
-  .intro-sprite{
-    position:absolute;top:50%;
-    transform:translateY(-50%);
-    width:42px;height:42px;
-    opacity:.98;
-    will-change:left;
-    object-fit:contain;
-    filter:invert(1) drop-shadow(0 2px 10px rgba(0,0,0,0.18));
-  }
-  body.dark .intro-sprite{filter:none drop-shadow(0 2px 10px rgba(0,0,0,0.25));}
-
-  /* Grenade runs away fast at start, slows near end (same motion as before) */
-  .intro-grenade{
-    left:16px;
-    animation:introRunGrenade 1s forwards;
-  }
-
-  @keyframes introRunGrenade{
-    0%   {left:16px}
-    28%  {left:calc(100% - 16px - 46px - 10px)}
-    60%  {left:calc(100% - 16px - 46px - 4px)}
-    100% {left:calc(100% - 16px - 46px)}
-  }
-
-  .intro-sub{
-    font-weight:800;
-    letter-spacing:.6px;
-    text-transform:uppercase;
-    font-size:.70rem;
-    opacity:.72;
-    text-align:center;
-  }
 </style>
 </head>
 <body>
 
-<!-- Loading intro (1s): Grenade only -->
-<div class="intro-backdrop" id="introBackdrop" aria-hidden="false">
-  <div class="intro-card">
-    <div class="intro-title">SHANTAJ</div>
-
-    <div class="intro-track" aria-label="Loading intro">
-      <div class="intro-line"></div>
-      <img class="intro-sprite intro-grenade" src="grenade.png" alt="Grenade" />
-    </div>
-
-    <div class="intro-sub">Loading…</div>
-  </div>
-</div>
-
 <canvas class="trail-canvas" id="trail"></canvas>
-
 <div class="loader" id="loader"><span></span></div>
-<script>
-  // Loader failsafe (never blocks the page)
-  (function(){
-    var el = document.getElementById('loader');
-    function hide(){
-      if(!el) return;
-      el.classList.add('hidden');
-      setTimeout(function(){ try{ el.remove(); }catch(e){} }, 650);
-    }
-    if(document.readyState === 'loading'){
-      document.addEventListener('DOMContentLoaded', hide, { once:true });
-    } else {
-      hide();
-    }
-    window.addEventListener('load', hide, { once:true });
-    setTimeout(hide, 1800);
-  })();
-
-  // Intro auto-hide (1 second)
-  (function(){
-    var intro = document.getElementById('introBackdrop');
-    function kill(){
-      if(!intro) return;
-      intro.classList.add('hide');
-      setTimeout(function(){ try{ intro.remove(); }catch(e){} }, 350);
-    }
-    setTimeout(kill, 1000);
-    window.addEventListener('load', function(){ setTimeout(kill, 1000); }, { once:true });
-  })();
-</script>
-
 <div class="cursor" id="cursor"></div>
 
 <nav>
@@ -729,15 +496,23 @@
   <h2>Socials</h2>
   <div class="socials-wrap">
     <a class="social-btn" href="https://discord.gg/hWXEDVZafw" target="_blank" rel="noopener">
-      <svg viewBox="0 0 127.14 96.36" fill="currentColor" aria-hidden="true"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83A72.06,72.06,0,0,0,45.64,0a105.89,105.89,0,0,0-26.25,8.09C2.71,32.65-1.82,56.6.39,80.21a105.73,105.73,0,0,0,32.17,16.15,a77.7,77.7,0,0,0,6.89-11.11,a68.42,68.42,0,0,1-10.85-5.18c.91-.66, 1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71, 1.76, 1.39, 2.66, 2a68.68,68.68,0,0,1-10.87,5.19,a77,77,0,0,0,6.89,11.1,a105.25,105.25,0,0,0,32.19-16.14c2.72-27.35-4.57-51.13-19.34-72.14ZM42.45,65.69C36.18,65.69,31,60,31,53s5.08-12.71,11.41-12.71,11.52,5.76,11.52,12.71S48.81,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5.08-12.71,11.44-12.71,11.52,5.76,11.52,12.71S88.77,65.69,84.69,65.69Z"/></svg>
+      <svg viewBox="0 0 127.14 96.36" fill="currentColor" aria-hidden="true">
+        <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.06,72.06,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.71,32.65-1.82,56.6.39,80.21a105.73,105.73,0,0,0,32.17,16.15,77.7,77.7,0,0,0,6.89-11.11,68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1,105.25,105.25,0,0,0,32.19-16.14c2.72-27.35-4.57-51.13-19.34-72.14ZM42.45,65.69C36.18,65.69,31,60,31,53s5.08-12.71,11.41-12.71,11.52,5.76,11.52,12.71S48.81,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5.08-12.71,11.44-12.71,11.52,5.76,11.52,12.71S88.77,65.69,84.69,65.69Z"/>
+      </svg>
       <span>Discord</span>
     </a>
+
     <a class="social-btn" href="https://www.youtube.com/@shantajhns" target="_blank" rel="noopener">
-      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.58 7.19a2.51 2.51 0 0 0-1.77-1.77C18.25 5 12 5 12 5s-6.25 0-7.81.42A2.51 2.51 0 0 0 2.42 7.2 26.6 26.6 0 0 0 2 12a26.6 26.6 0 0 0 .42 4.81 2.51 2.51 0 0 0 1.77 1.77C5.75 19 12 19 12 19s6.25 0 7.81-.42a2.51 2.51 0 0 0 1.77-1.77A26.6 26.6 0 0 0 22 12a26.6 26.6 0 0 0-.42-4.81ZM10 15.5v-7l6 3.5-6 3.5Z"/></svg>
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M21.58 7.19a2.51 2.51 0 0 0-1.77-1.77C18.25 5 12 5 12 5s-6.25 0-7.81.42A2.51 2.51 0 0 0 2.42 7.2 26.6 26.6 0 0 0 2 12a26.6 26.6 0 0 0 .42 4.81 2.51 2.51 0 0 0 1.77 1.77C5.75 19 12 19 12 19s6.25 0 7.81-.42a2.51 2.51 0 0 0 1.77-1.77A26.6 26.6 0 0 0 22 12a26.6 26.6 0 0 0-.42-4.81ZM10 15.5v-7l6 3.5-6 3.5Z"/>
+      </svg>
       <span>YouTube</span>
     </a>
+
     <a class="social-btn" href="http://tiktok.com/@shantaj_hns" target="_blank" rel="noopener">
-      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.5 3c.6 2.7 2.3 4.4 5 5v4.1c-1.8 0-3.3-.5-4.7-1.4v6.6c0 3.7-3 6.7-6.7 6.7S3.4 21 3.4 17.3c0-3.6 2.9-6.6 6.6-6.6.4 0 .8 0 1.2.1v4.3c-.3-.1-.6-.2-1-.2-1.4 0-2.5 1.1-2.5 2.4 0 1.4 1.1 2.5 2.5 2.5s2.6-1.1 2.6-2.5V3h3.7Z"/></svg>
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M16.5 3c.6 2.7 2.3 4.4 5 5v4.1c-1.8 0-3.3-.5-4.7-1.4v6.6c0 3.7-3 6.7-6.7 6.7S3.4 21 3.4 17.3c0-3.6 2.9-6.6 6.6-6.6.4 0 .8 0 1.2.1v4.3c-.3-.1-.6-.2-1-.2-1.4 0-2.5 1.1-2.5 2.4 0 1.4 1.1 2.5 2.5 2.5s2.6-1.1 2.6-2.5V3h3.7Z"/>
+      </svg>
       <span>TikTok</span>
     </a>
   </div>
@@ -746,12 +521,7 @@
 <section class="news reveal-on-scroll" id="news">
   <h2>Latest News</h2>
 
-  <!-- BOOST CUP MODULE (STATIC, JOIN ONLY) -->
   <div class="cup-banner">
-    <div class="cup-snow" aria-hidden="true">
-      <span class="snow-layer s1"></span>
-      <span class="snow-layer s2"></span>
-    </div>
     <div class="cup-left">
       <img class="cup-img" src="motd-wintercup.png" alt="Winter Cup" />
       <div class="cup-text">
@@ -769,11 +539,14 @@
 </section>
 
 <section class="youtube-section reveal-on-scroll">
-  <h2>Latest YouTube Video</h2>
   <div class="video-container">
     <iframe id="ytEmbed" title="YouTube video player" frameborder="0"
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
       allowfullscreen></iframe>
+  </div>
+  <div class="video-fallback">
+    If the embed errors, the video is likely restricted from embedding. Open on YouTube:
+    <a href="https://www.youtube.com/watch?v=yEcdGXJPku0" target="_blank" rel="noopener">Watch</a>
   </div>
 </section>
 
@@ -811,7 +584,7 @@
         <div class="perk-item">2X Coins from Mixes</div>
         <div class="perk-item">Open kei6 in MIX</div>
       </div>
-      <button class="vip-buy" data-plan="vip" type="button">Get VIP</button>
+      <button type="button" class="buy-btn" data-plan="vip">Get VIP</button>
     </div>
 
     <div class="vip-card" data-plan="vipplus">
@@ -828,7 +601,7 @@
         <div class="perk-item">Open kei6 in MIX</div>
         <div class="perk-item" style="color:gold;font-weight:900;">SERVER WATCHER</div>
       </div>
-      <button class="vip-buy" data-plan="vipplus" type="button">Go VIP+</button>
+      <button type="button" class="buy-btn" data-plan="vipplus">Go VIP+</button>
     </div>
   </div>
 
@@ -934,36 +707,20 @@
 </div>
 
 <script>
-  // NEWS
-  const NEWS = [
-    { id:'1.4', title:'Update 1.4 Released', teaser:'Optimized server performance. Click to read more.', body:'This update includes a brand new anti-cheat system and smoother movement.' },
-    { id:'vip-perks', title:'New VIP Perks', teaser:'New features added for all VIP members!', body:'VIP members now have access to custom knife skins and trails.' },
-    { id:'event', title:'Community Event', teaser:'Join us this Saturday for a massive mix event.', body:'Winning team receives 5,000 Coins each! Register in Discord.' },
-  ];
-  function renderNews(cards){
-    const grid = document.getElementById('newsGrid');
-    if(!grid) return;
-    grid.innerHTML='';
-    cards.forEach(n=>{
-      const card=document.createElement('div');
-      card.className='post-card';
-      card.innerHTML=`
-        <h3>${n.title}</h3>
-        <p>${n.teaser}</p>
-        <div class="full-text">${n.body}</div>
-        <button class="expand-btn" type="button">Expand</button>
-      `;
-      const btn=card.querySelector('button');
-      btn.addEventListener('click',()=>{
-        card.classList.toggle('expanded');
-        btn.innerText=card.classList.contains('expanded')?'Hide':'Expand';
-      });
-      grid.appendChild(card);
-    });
-  }
-  renderNews(NEWS.slice(0,3));
+  /* Loader failsafe */
+  (function(){
+    const el = document.getElementById('loader');
+    function hide(){
+      if(!el) return;
+      el.classList.add('hidden');
+      setTimeout(()=>{ try{el.remove()}catch(e){} }, 650);
+    }
+    window.addEventListener('load', hide, { once:true });
+    document.addEventListener('DOMContentLoaded', hide, { once:true });
+    setTimeout(hide, 1600);
+  })();
 
-  // Theme
+  /* Theme */
   const themeLogo=document.getElementById('theme-logo');
   const themeToggle=document.getElementById('themeToggle');
   if(localStorage.getItem('theme')==='dark'){
@@ -979,6 +736,7 @@
     location.reload();
   });
 
+  /* Copy IP */
   function copyIP(){
     const ip="45.144.155.103:27026";
     navigator.clipboard.writeText(ip);
@@ -988,42 +746,31 @@
   }
   window.copyIP=copyIP;
 
-  // Reveal
+  /* Reveal */
   const observer=new IntersectionObserver(entries=>{
     entries.forEach(entry=>{ if(entry.isIntersecting){ entry.target.classList.add('reveal'); } });
   },{threshold:0.1});
   document.querySelectorAll('.reveal-on-scroll').forEach(el=>observer.observe(el));
 
-  // Cursor dot
+  /* Cursor dot */
   const cursor=document.getElementById('cursor');
   document.addEventListener('mousemove',e=>{ cursor.style.left=e.clientX+'px'; cursor.style.top=e.clientY+'px'; });
 
-  // YouTube embed
-  const yt=document.getElementById('ytEmbed');
-  try{
-    const origin=encodeURIComponent(window.location.origin);
-    yt.src=`https://www.youtube-nocookie.com/embed/yEcdGXJPku0?rel=0&modestbranding=1&playsinline=1&origin=${origin}`;
-  }catch(e){
-    yt.src='https://www.youtube-nocookie.com/embed/yEcdGXJPku0?rel=0&modestbranding=1&playsinline=1';
-  }
-
-  // Cursor trail: short smooth dots
+  /* Trail dots */
   const canvas = document.getElementById('trail');
   const ctx = canvas.getContext('2d');
   function resizeTrail(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
   resizeTrail(); window.addEventListener('resize', resizeTrail);
 
   const dots = [];
-  const MAX_DOTS = 120;
-  const LIFE_MS = 170;
-  const HEAD_R = 3.0;
-  const TAIL_R = 0.22;
-  const STEP = 2.8;
-
-  function accent(){
-    return getComputedStyle(document.body).getPropertyValue('--accent').trim() || '#111';
-  }
+  const MAX_DOTS = 110;
+  const LIFE_MS = 160;
+  const HEAD_R = 2.6;
+  const TAIL_R = 0.18;
+  const STEP = 2.6;
+  function accent(){ return getComputedStyle(document.body).getPropertyValue('--accent').trim() || '#111'; }
   let lastX=null,lastY=null;
+
   document.addEventListener('mousemove',(e)=>{
     const now = performance.now();
     if(lastX===null){ lastX=e.clientX; lastY=e.clientY; }
@@ -1060,11 +807,51 @@
   }
   requestAnimationFrame(drawDots);
 
-  // Crypto bar builder (same coins as module)
+  /* YouTube embed */
+  const yt=document.getElementById('ytEmbed');
+  try{
+    const origin=encodeURIComponent(window.location.origin);
+    yt.src=`https://www.youtube-nocookie.com/embed/yEcdGXJPku0?rel=0&modestbranding=1&playsinline=1&origin=${origin}`;
+  }catch(e){
+    yt.src='https://www.youtube-nocookie.com/embed/yEcdGXJPku0?rel=0&modestbranding=1&playsinline=1';
+  }
+
+  /* News (latest 3) */
+  const NEWS = [
+    { id:'cup', tag:'Event', title:'SHANTAJ 3v3 WINTER BOOST CUP', teaser:'Tournament announcement is live.', body:'Register in Discord. More info and brackets will be posted soon.' },
+    { id:'1.4', tag:'Update', title:'Update 1.4 Released', teaser:'Optimized server performance. Click to read more.', body:'This update includes a brand new anti-cheat system and smoother movement.' },
+    { id:'vip-perks', tag:'VIP', title:'New VIP Perks', teaser:'New features added for all VIP members!', body:'VIP members now have access to custom knife skins and trails.' },
+    { id:'fix', tag:'Fix', title:'Hotfix Applied', teaser:'Small fixes and improvements.', body:'Fixed minor map exploits and improved spectator stability.' },
+  ];
+  function tagChip(tag){ return `<div class="tag">${String(tag||'Update').toUpperCase()}</div>`; }
+  function renderNews(cards){
+    const grid = document.getElementById('newsGrid');
+    grid.innerHTML='';
+    cards.forEach(n=>{
+      const card=document.createElement('div');
+      card.className='post-card';
+      card.innerHTML=`
+        <div class="tag-row">${tagChip(n.tag)}</div>
+        <h3>${n.title}</h3>
+        <p>${n.teaser}</p>
+        <div class="full-text">${n.body}</div>
+        <button class="expand-btn" type="button">Expand</button>
+      `;
+      const btn=card.querySelector('button');
+      btn.addEventListener('click',()=>{
+        card.classList.toggle('expanded');
+        btn.innerText=card.classList.contains('expanded')?'Hide':'Expand';
+      });
+      grid.appendChild(card);
+    });
+  }
+  renderNews(NEWS.slice(0,3));
+
+  /* Crypto bar builder (infinite) - MUST MATCH MODULE CRYPTOS */
   (function(){
     const track = document.getElementById('cryptoTrack');
     if(!track) return;
-    const coins = ["BITCOIN","ETHEREUM","TRON","LITECOIN","SOLANA","USDT"];
+    const coins = ["BITCOIN","ETHEREUM","USDT","TRON","LITECOIN","SOLANA"];
     function buildOnce(){
       const frag = document.createDocumentFragment();
       coins.forEach((c) => {
@@ -1084,23 +871,22 @@
     const baseHTML = track.innerHTML;
     track.insertAdjacentHTML('beforeend', baseHTML);
     let safety = 0;
-    while(track.scrollWidth < window.innerWidth * 2 && safety < 6){
+    while(track.scrollWidth < window.innerWidth * 2 && safety < 7){
       track.insertAdjacentHTML('beforeend', baseHTML);
       safety++;
     }
   })();
 
-  // VIP duration pricing
+  /* VIP duration pricing */
   const PRICES = {
     vip:    { 1: "€5",   3: "€12.5", 6: "€20" },
     vipplus:{ 1: "€10",  3: "€25",   6: "€40" }
   };
   const priceVip = document.getElementById('priceVip');
   const priceVipPlus = document.getElementById('priceVipPlus');
+
   function bump(el){
-    el.classList.remove('bump');
-    void el.offsetWidth;
-    el.classList.add('bump');
+    el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
     setTimeout(()=>el.classList.remove('bump'), 220);
   }
   function bumpPerks(listId){
@@ -1109,12 +895,8 @@
       setTimeout(()=>{
         it.classList.add('perk-bump');
         setTimeout(()=>it.classList.remove('perk-bump'), 220);
-      }, idx * 16);
+      }, idx * 14);
     });
-  }
-  function getSelectedMonths(){
-    const checked = document.querySelector('input[name="vipDuration"]:checked');
-    return checked ? Number(checked.value) : 1;
   }
   function setDuration(months){
     priceVip.textContent = PRICES.vip[months];
@@ -1127,54 +909,25 @@
   });
   setDuration(1);
 
-  // =========================
-  // VIP Checkout Modal
-  // =========================
-
-  // Google Sheets Web App endpoint
-  const ORDERS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycby7RS9VRBFkj7zT5l_fLhAPTVHasLY97SCpJbZwdWFDaUo0c2YIxss0MJk3BFZgf3Qq/exec";
-
-  // Fire-and-forget submit (works well cross-origin)
-  function submitOrder(payload){
-    try{
-      const body = JSON.stringify(payload);
-
-      // Best-effort: sendBeacon (no CORS reading needed)
-      if(navigator.sendBeacon){
-        const blob = new Blob([body], { type: "application/json" });
-        const ok = navigator.sendBeacon(ORDERS_WEBAPP_URL, blob);
-        return Promise.resolve(!!ok);
-      }
-
-      // Fallback: fetch without CORS response access
-      return fetch(ORDERS_WEBAPP_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body
-      }).then(()=>true).catch(()=>false);
-    }catch(e){
-      return Promise.resolve(false);
-    }
-  }
-
-  // Put your real addresses here:
+  /* =========================
+     VIP Checkout Modal (JS)
+     ========================= */
   const WALLETS = {
     BTC:  "YOUR_BTC_ADDRESS_HERE",
     ETH:  "YOUR_ETH_ADDRESS_HERE",
+    USDT: "YOUR_USDT_ADDRESS_HERE",
     TRX:  "YOUR_TRX_ADDRESS_HERE",
     LTC:  "YOUR_LTC_ADDRESS_HERE",
-    SOL:  "YOUR_SOL_ADDRESS_HERE",
-    USDT: "YOUR_USDT_ADDRESS_HERE"
+    SOL:  "YOUR_SOL_ADDRESS_HERE"
   };
 
   const CRYPTOS = [
     { key:"BTC",  label:"Bitcoin" },
     { key:"ETH",  label:"Ethereum" },
+    { key:"USDT", label:"USDT" },
     { key:"TRX",  label:"Tron" },
     { key:"LTC",  label:"Litecoin" },
     { key:"SOL",  label:"Solana" },
-    { key:"USDT", label:"USDT" },
   ];
 
   const modalBackdrop = document.getElementById('vipModalBackdrop');
@@ -1207,6 +960,10 @@
   function planName(plan){
     return plan === "vip" ? "Basic VIP" : "VIP+";
   }
+  function getSelectedMonths(){
+    const checked = document.querySelector('input[name="vipDuration"]:checked');
+    return checked ? Number(checked.value) : 1;
+  }
 
   function buildCryptoChips(){
     cryptoOptions.innerHTML = "";
@@ -1228,7 +985,6 @@
     });
     const addr = WALLETS[key] || "";
     walletAddress.value = addr;
-
     const qrData = encodeURIComponent(addr || "SET_YOUR_WALLET_ADDRESS");
     qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${qrData}`;
   }
@@ -1243,7 +999,6 @@
     paidBtn.disabled = false;
     paidBtn.textContent = "I paid";
     paidBtn.style.opacity = "";
-    paidBtn.style.transform = "";
 
     planLine.textContent = `${planName(currentPlan)} — ${currentMonths} ${currentMonths===1?'Month':'Months'}`;
     subLine.textContent = `Select crypto & send ${moneyFor(currentPlan, currentMonths)}`;
@@ -1257,16 +1012,18 @@
     modalBackdrop.classList.add('show');
     modalBackdrop.setAttribute('aria-hidden','false');
     document.body.style.overflow = 'hidden';
+    document.body.classList.add('modal-open');
   }
 
   function closeModal(){
     modalBackdrop.classList.remove('show');
     modalBackdrop.setAttribute('aria-hidden','true');
     document.body.style.overflow = '';
+    document.body.classList.remove('modal-open');
   }
 
-  document.querySelectorAll('.vip-buy').forEach(btn=>{
-    btn.addEventListener('click', ()=> openModal(btn.dataset.plan));
+  document.querySelectorAll('.buy-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=> openModal(btn.dataset.plan || 'vip'));
   });
 
   modalClose.addEventListener('click', closeModal);
@@ -1297,19 +1054,6 @@
       setTimeout(()=>steamIdInput.style.borderColor="", 900);
       return;
     }
-
-    // Submit order to Google Sheets (best-effort, non-blocking)
-    submitOrder({
-      steamId: steam,
-      plan: planName(currentPlan),
-      months: String(currentMonths),
-      crypto: String(currentCrypto),
-      amount: String(moneyFor(currentPlan, currentMonths)),
-      txid: String((txIdInput.value || "").trim()),
-      page: String(location.href),
-      ua: String(navigator.userAgent || "")
-    });
-
     paidSection.style.display = "block";
     paidBtn.textContent = "Marked as paid";
     paidBtn.disabled = true;
@@ -1327,7 +1071,6 @@
     }
   });
 
-  // Keep modal in sync with duration changes
   document.querySelectorAll('input[name="vipDuration"]').forEach(r=>{
     r.addEventListener('change', ()=>{
       if(!modalBackdrop.classList.contains('show')) return;
