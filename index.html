@@ -1282,7 +1282,7 @@
     howIcon.textContent = howAcc.classList.contains('acc-open') ? "–" : "+";
   });
 
-  // ===== ORDER SUBMIT (ADDED) =====
+  // ===== ORDER SUBMIT (FIXED) =====
   function submitOrderToSheets(){
     const form = document.getElementById('orderForm');
     if(!form) return;
@@ -1291,24 +1291,66 @@
     const steam = steamIdInput.value.trim();
     const txid = (txIdInput.value || "").trim();
 
-    const id = (crypto && crypto.randomUUID)
-      ? crypto.randomUUID()
+    const id = (window.crypto && window.crypto.randomUUID)
+      ? window.crypto.randomUUID()
       : (Date.now() + "-" + Math.random().toString(16).slice(2));
 
+    // Fill hidden inputs (kept)
     document.getElementById('orderTs').value = new Date().toISOString();
     document.getElementById('orderId').value = id;
     document.getElementById('orderSteamId').value = steam;
     document.getElementById('orderPlan').value = planName(currentPlan);
     document.getElementById('orderMonths').value = String(months);
-    document.getElementById('orderCrypto').value = currentCrypto;
+    document.getElementById('orderCrypto').value = String(currentCrypto || "");
     document.getElementById('orderAmount').value = moneyFor(currentPlan, months);
     document.getElementById('orderTxid').value = txid;
     document.getElementById('orderTheme').value = document.body.classList.contains('dark') ? 'dark' : 'light';
     document.getElementById('orderPage').value = location.href;
     document.getElementById('orderUa').value = navigator.userAgent;
 
-    // Fire-and-forget submit (no CORS issues)
-    form.submit();
+    // Build URL-encoded payload (used for beacon/fetch)
+    const endpoint = form.action;
+    const payloadObj = {
+      ts: document.getElementById('orderTs').value,
+      orderId: document.getElementById('orderId').value,
+      steamId: document.getElementById('orderSteamId').value,
+      plan: document.getElementById('orderPlan').value,
+      months: document.getElementById('orderMonths').value,
+      crypto: document.getElementById('orderCrypto').value,
+      amount: document.getElementById('orderAmount').value,
+      txid: document.getElementById('orderTxid').value,
+      theme: document.getElementById('orderTheme').value,
+      page: document.getElementById('orderPage').value,
+      ua: document.getElementById('orderUa').value
+    };
+    const bodyStr = new URLSearchParams(payloadObj).toString();
+
+    // 1) Best: sendBeacon (no CORS issues, reliable)
+    let sent = false;
+    try{
+      if (navigator.sendBeacon){
+        const blob = new Blob([bodyStr], { type: "application/x-www-form-urlencoded;charset=UTF-8" });
+        sent = navigator.sendBeacon(endpoint, blob);
+      }
+    }catch(e){}
+
+    // 2) Fallback: fetch no-cors (still sends; you can't read response)
+    if(!sent){
+      try{
+        fetch(endpoint, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+          body: bodyStr
+        }).catch(()=>{});
+        sent = true;
+      }catch(e){}
+    }
+
+    // 3) Final fallback: hidden form submit (your original method)
+    if(!sent){
+      try{ form.submit(); }catch(e){}
+    }
   }
 
   paidBtn.addEventListener('click', ()=>{
