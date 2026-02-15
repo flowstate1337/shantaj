@@ -941,7 +941,7 @@
 <!-- (kept, hidden; not used anymore but doesn't affect UI) -->
 <iframe name="orderSink" id="orderSink" style="display:none;"></iframe>
 <form id="orderForm"
-  action="https://script.google.com/macros/s/AKfycby7RS9VRBFkj7zT5l_fLhAPTVHasLY97SCpJbZwdWFDaUo0c2YIxss0MJk3BFZgf3Qq/exec"
+  action="https://script.google.com/macros/s/AKfycbzuUl3APdtnkb6P2ov5bJlawuwtlWWLI7FwELnBBOhEyFEqe2FzWwMu2a6xXm1zLjy_/exec"
   method="GET"
   target="orderSink"
   style="display:none;">
@@ -1287,8 +1287,8 @@
     howIcon.textContent = howAcc.classList.contains('acc-open') ? "–" : "+";
   });
 
-  // ===== ORDER SUBMIT (FIXED: reliable GET ping) =====
-  const ORDER_ENDPOINT = "https://script.google.com/macros/s/AKfycby7RS9VRBFkj7zT5l_fLhAPTVHasLY97SCpJbZwdWFDaUo0c2YIxss0MJk3BFZgf3Qq/exec";
+  // ===== ORDER SUBMIT (UPDATED: correct endpoint + stronger beacon/fallbacks) =====
+  const ORDER_ENDPOINT = "https://script.google.com/macros/s/AKfycbzuUl3APdtnkb6P2ov5bJlawuwtlWWLI7FwELnBBOhEyFEqe2FzWwMu2a6xXm1zLjy_/exec";
 
   function submitOrderToSheets(){
     const months = getSelectedMonths();
@@ -1305,14 +1305,33 @@
     params.set("txid", txid);
     params.set("page", location.href);
     params.set("ua", (navigator.userAgent || "").slice(0, 180));
+    params.set("debug", "0");
 
-    const url = ORDER_ENDPOINT + "?" + params.toString() + "&_=" + Date.now();
+    const qs = params.toString();
+    const getUrl = ORDER_ENDPOINT + "?" + qs + "&_=" + Date.now();
 
-    // Fire-and-forget (no CORS, no iframe issues)
+    // 1) Best-effort POST beacon (often survives navigation / blockers)
+    try{
+      if(navigator.sendBeacon){
+        const body = new Blob([qs], { type: "application/x-www-form-urlencoded;charset=UTF-8" });
+        const ok = navigator.sendBeacon(ORDER_ENDPOINT, body);
+        if(ok) return; // if queued, we're done
+      }
+    }catch(e){}
+
+    // 2) no-cors fetch (fire-and-forget)
+    try{
+      if(window.fetch){
+        fetch(getUrl, { method: "GET", mode: "no-cors", keepalive: true, credentials: "omit" });
+        return;
+      }
+    }catch(e){}
+
+    // 3) Image ping fallback (no CORS, widely supported)
     const img = new Image();
-    img.src = url;
+    img.referrerPolicy = "no-referrer";
+    img.src = getUrl;
 
-    // keep reference briefly so it doesn't get GC'd instantly
     window.__orderPing = img;
     setTimeout(()=>{ try{ if(window.__orderPing === img) window.__orderPing = null; }catch(e){} }, 4000);
   }
