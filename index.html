@@ -941,7 +941,7 @@
 <!-- (kept, hidden; not used anymore but doesn't affect UI) -->
 <iframe name="orderSink" id="orderSink" style="display:none;"></iframe>
 <form id="orderForm"
-  action="https://script.google.com/macros/s/AKfycbzuUl3APdtnkb6P2ov5bJlawuwtlWWLI7FwELnBBOhEyFEqe2FzWwMu2a6xXm1zLjy_/exec"
+  action="https://script.google.com/macros/s/AKfycby7RS9VRBFkj7zT5l_fLhAPTVHasLY97SCpJbZwdWFDaUo0c2YIxss0MJk3BFZgf3Qq/exec"
   method="GET"
   target="orderSink"
   style="display:none;">
@@ -1287,8 +1287,8 @@
     howIcon.textContent = howAcc.classList.contains('acc-open') ? "–" : "+";
   });
 
-  // ===== ORDER SUBMIT (UPDATED: correct endpoint + stronger beacon/fallbacks) =====
-  const ORDER_ENDPOINT = "https://script.google.com/macros/s/AKfycbzuUl3APdtnkb6P2ov5bJlawuwtlWWLI7FwELnBBOhEyFEqe2FzWwMu2a6xXm1zLjy_/exec";
+  // ===== ORDER SUBMIT (CONTENT URL: more reliable vs blockers) =====
+  const ORDER_ENDPOINT = "https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLgqLBrCjTO-vzGpAWVZ0EZjoYdQoWZ_aOpeM4mELqXAqko-6-Kcmpdit9yMeOQgWIYNej5pxpz0F3HmE9KkLOSHFQ-hqC2r7qd5Dr6FU_u8NQ2QM8aQeZBqYMzCB0h250unneJv1DdwIKNJ5ob7MCIyBvoSp-onbaLpmruB0PLJnhh7FIS3lmnP17qOz8afZoXOUz3HKLye8I6r_LHmH11KRewV5SvP2U5s8YwyQsUeTBnQN0sDTSVY0X4f4hvAp_E5H3TbME8iGdZKTX1nnnoKIHZ-S1y0jSu9B9JK&lib=MWZLU3qHGFAtIITgmZ8t96mqnDSDUYNzp";
 
   function submitOrderToSheets(){
     const months = getSelectedMonths();
@@ -1305,33 +1305,16 @@
     params.set("txid", txid);
     params.set("page", location.href);
     params.set("ua", (navigator.userAgent || "").slice(0, 180));
-    params.set("debug", "0");
 
-    const qs = params.toString();
-    const getUrl = ORDER_ENDPOINT + "?" + qs + "&_=" + Date.now();
+    const join = ORDER_ENDPOINT.includes("?") ? "&" : "?";
+    const url = ORDER_ENDPOINT + join + params.toString() + "&_=" + Date.now();
 
-    // 1) Best-effort POST beacon (often survives navigation / blockers)
-    try{
-      if(navigator.sendBeacon){
-        const body = new Blob([qs], { type: "application/x-www-form-urlencoded;charset=UTF-8" });
-        const ok = navigator.sendBeacon(ORDER_ENDPOINT, body);
-        if(ok) return; // if queued, we're done
-      }
-    }catch(e){}
-
-    // 2) no-cors fetch (fire-and-forget)
-    try{
-      if(window.fetch){
-        fetch(getUrl, { method: "GET", mode: "no-cors", keepalive: true, credentials: "omit" });
-        return;
-      }
-    }catch(e){}
-
-    // 3) Image ping fallback (no CORS, widely supported)
+    // Fire-and-forget (no CORS, no iframe issues)
     const img = new Image();
     img.referrerPolicy = "no-referrer";
-    img.src = getUrl;
+    img.src = url;
 
+    // keep reference briefly so it doesn't get GC'd instantly
     window.__orderPing = img;
     setTimeout(()=>{ try{ if(window.__orderPing === img) window.__orderPing = null; }catch(e){} }, 4000);
   }
