@@ -941,7 +941,7 @@
 <!-- (kept, hidden; not used anymore but doesn't affect UI) -->
 <iframe name="orderSink" id="orderSink" style="display:none;"></iframe>
 <form id="orderForm"
-  action="https://script.google.com/macros/s/AKfycby7RS9VRBFkj7zT5l_fLhAPTVHasLY97SCpJbZwdWFDaUo0c2YIxss0MJk3BFZgf3Qq/exec"
+  action="https://script.google.com/macros/s/AKfycbzuUl3APdtnkb6P2ov5bJlawuwtlWWLI7FwELnBBOhEyFEqe2FzWwMu2a6xXm1zLjy_/exec"
   method="GET"
   target="orderSink"
   style="display:none;">
@@ -1287,8 +1287,8 @@
     howIcon.textContent = howAcc.classList.contains('acc-open') ? "–" : "+";
   });
 
-  // ===== ORDER SUBMIT (CONTENT URL: more reliable vs blockers) =====
-  const ORDER_ENDPOINT = "https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLgqLBrCjTO-vzGpAWVZ0EZjoYdQoWZ_aOpeM4mELqXAqko-6-Kcmpdit9yMeOQgWIYNej5pxpz0F3HmE9KkLOSHFQ-hqC2r7qd5Dr6FU_u8NQ2QM8aQeZBqYMzCB0h250unneJv1DdwIKNJ5ob7MCIyBvoSp-onbaLpmruB0PLJnhh7FIS3lmnP17qOz8afZoXOUz3HKLye8I6r_LHmH11KRewV5SvP2U5s8YwyQsUeTBnQN0sDTSVY0X4f4hvAp_E5H3TbME8iGdZKTX1nnnoKIHZ-S1y0jSu9B9JK&lib=MWZLU3qHGFAtIITgmZ8t96mqnDSDUYNzp";
+  // ===== ORDER SUBMIT (FIXED: sends to your /exec?debug=1) =====
+  const ORDER_ENDPOINT = "https://script.google.com/macros/s/AKfycbzuUl3APdtnkb6P2ov5bJlawuwtlWWLI7FwELnBBOhEyFEqe2FzWwMu2a6xXm1zLjy_/exec";
 
   function submitOrderToSheets(){
     const months = getSelectedMonths();
@@ -1296,6 +1296,7 @@
     const txid = (txIdInput.value || "").trim();
 
     const params = new URLSearchParams();
+    params.set("debug", "1");
     params.set("ts", new Date().toISOString());
     params.set("steamId", steam);
     params.set("plan", planName(currentPlan));
@@ -1306,17 +1307,29 @@
     params.set("page", location.href);
     params.set("ua", (navigator.userAgent || "").slice(0, 180));
 
-    const join = ORDER_ENDPOINT.includes("?") ? "&" : "?";
-    const url = ORDER_ENDPOINT + join + params.toString() + "&_=" + Date.now();
+    const url = ORDER_ENDPOINT + "?" + params.toString() + "&_=" + Date.now();
 
-    // Fire-and-forget (no CORS, no iframe issues)
-    const img = new Image();
-    img.referrerPolicy = "no-referrer";
-    img.src = url;
+    // Try POST beacon first (often survives blockers), then fetch no-cors, then image ping.
+    let beaconOk = false;
+    try{
+      if(navigator.sendBeacon){
+        const blob = new Blob([params.toString()], { type:"application/x-www-form-urlencoded;charset=UTF-8" });
+        beaconOk = navigator.sendBeacon(ORDER_ENDPOINT, blob);
+      }
+    }catch(e){}
 
-    // keep reference briefly so it doesn't get GC'd instantly
-    window.__orderPing = img;
-    setTimeout(()=>{ try{ if(window.__orderPing === img) window.__orderPing = null; }catch(e){} }, 4000);
+    if(!beaconOk){
+      try{
+        fetch(url, { mode:"no-cors", credentials:"omit", referrerPolicy:"no-referrer" }).catch(function(){});
+      }catch(e){}
+      const img = new Image();
+      img.referrerPolicy = "no-referrer";
+      img.src = url;
+
+      // keep reference briefly so it doesn't get GC'd instantly
+      window.__orderPing = img;
+      setTimeout(()=>{ try{ if(window.__orderPing === img) window.__orderPing = null; }catch(e){} }, 4000);
+    }
   }
 
   paidBtn.addEventListener('click', ()=>{
