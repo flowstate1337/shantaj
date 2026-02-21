@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="referrer" content="strict-origin-when-cross-origin"/>
+<title>SHANTAJ — Maps</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;cursor:none !important;}
+  html{scroll-behavior:smooth}
+
+  :root{
+    --bg:#ffffff;
+    --text:#111;
+    --card:rgba(255,255,255,0.6);
+    --border:rgba(0,0,0,0.08);
+    --accent:#111;
+    --btn-bg:#111;
+    --btn-text:#fff;
+  }
+  body.dark{
+    --bg:#0a0a0a;
+    --text:#fff;
+    --card:rgba(255,255,255,0.05);
+    --border:rgba(255,255,255,0.08);
+    --accent:#fff;
+    --btn-bg:#fff;
+    --btn-text:#111;
+  }
+
+  body{
+    font-family:'Inter',sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    transition:background .35s ease,color .35s ease;
+    overflow-x:hidden;
+    position:relative;
+  }
+
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:url('rooftops-linework.png') center/cover no-repeat;
+    opacity:0.06;
+    pointer-events:none;
+    z-index:0;
+    transform:translateZ(0) scale(1.05);
+  }
+  body.dark::before{opacity:0.05;filter:invert(1);}
+
+  @media(max-width:768px){
+    .cursor,.trail-canvas{display:none}
+    *{cursor:auto !important;}
+  }
+
+  /* Cursor */
+  .cursor{
+    position:fixed;width:8px;height:8px;border-radius:50%;
+    background:var(--accent);
+    pointer-events:none;
+    transform:translate3d(-50%,-50%,0);
+    will-change: transform, left, top;
+    z-index:40000;
+  }
+  .trail-canvas{position:fixed;inset:0;pointer-events:none;z-index:39999;}
+
+  /* NAV */
+  nav{
+    position:fixed;top:0;left:0;right:0;
+    backdrop-filter:blur(10px);
+    background:rgba(255,255,255,0.6);
+    border-bottom:1px solid var(--border);
+    z-index:1000;
+  }
+  body.dark nav{background:rgba(0,0,0,0.6)}
+  .nav-inner{
+    max-width:1100px;margin:0 auto;
+    padding:18px 20px;
+    display:flex;align-items:center;position:relative;
+  }
+  .nav-links{margin:0 auto;display:flex;gap:30px;align-items:center;justify-content:center;}
+  .nav-links a{
+    text-decoration:none;font-weight:800;color:var(--text);
+    letter-spacing:.5px;text-transform:uppercase;position:relative;
+  }
+  .nav-links a::after{
+    content:"";position:absolute;left:0;bottom:-6px;height:2px;width:0;background:var(--accent);transition:.25s ease;
+  }
+  .nav-links a:hover::after{width:100%;}
+
+  .toggle{position:absolute;right:20px;width:50px;height:26px}
+  .toggle input{display:none}
+  .slider{position:absolute;inset:0;background:#ccc;border-radius:50px;transition:.25s;outline:1px solid var(--border);}
+  .slider:before{content:"";position:absolute;height:20px;width:20px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.25s}
+  input:checked + .slider{background:var(--accent)}
+  input:checked + .slider:before{transform:translateX(24px);background:var(--bg)}
+
+  /* Page */
+  .wrap{
+    max-width:1100px;
+    margin:0 auto;
+    padding:120px 20px 80px 20px;
+    position:relative;
+    z-index:2;
+  }
+  h1{
+    text-align:center;
+    font-size:2.4rem;
+    font-weight:900;
+    letter-spacing:.6px;
+    margin-bottom:18px;
+  }
+  .sub{
+    text-align:center;
+    opacity:.8;
+    font-weight:700;
+    margin-bottom:32px;
+  }
+
+  /* Centered selectors */
+  .selectors{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    align-items:center;
+    margin-bottom:26px;
+  }
+
+  .segmented{
+    display:inline-flex;
+    border-radius:999px;
+    padding:5px;
+    background:var(--card);
+    backdrop-filter:blur(16px);
+    box-shadow:inset 0 0 0 1px var(--border);
+  }
+  .segmented input{display:none}
+  .segmented label{display:flex}
+  .seg-btn{
+    min-width:170px;
+    text-align:center;
+    padding:10px 16px;
+    border-radius:999px;
+    font-weight:900;
+    letter-spacing:.6px;
+    text-transform:uppercase;
+    font-size:.78rem;
+    color:var(--text);
+    transition:transform .18s ease, background .18s ease, color .18s ease;
+    user-select:none;
+  }
+  .seg-btn:hover{transform:scale(1.02)}
+  .segmented input:checked + .seg-btn{
+    background:var(--accent);
+    color:var(--bg);
+  }
+
+  .cats{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:10px;
+  }
+  .cat-btn{
+    border:1px solid var(--border);
+    background:var(--card);
+    color:var(--text);
+    padding:10px 14px;
+    border-radius:999px;
+    font-weight:900;
+    letter-spacing:.5px;
+    text-transform:uppercase;
+    font-size:.75rem;
+    transition:.15s;
+  }
+  .cat-btn:hover{transform:scale(1.03)}
+  .cat-btn.active{
+    background:var(--accent);
+    color:var(--bg);
+  }
+
+  /* Cards */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));
+    gap:22px;
+    margin-top:12px;
+  }
+
+  .card{
+    border:1px solid var(--border);
+    border-radius:22px;
+    background:var(--card);
+    backdrop-filter:blur(18px);
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+
+  .img{
+    height:320px; /* BIG image */
+    width:100%;
+    object-fit:cover;
+    display:block;
+  }
+
+  .content{
+    padding:16px 16px 18px 16px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+
+  .name-row{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .map-name{
+    font-weight:900;
+    letter-spacing:.4px;
+    font-size:1.05rem;
+    line-height:1.15;
+  }
+
+  .badges{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+  .badge{
+    border:1px solid var(--border);
+    padding:6px 10px;
+    border-radius:999px;
+    font-weight:900;
+    font-size:.68rem;
+    letter-spacing:.6px;
+    text-transform:uppercase;
+    opacity:.95;
+  }
+
+  .meta{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    margin-top:2px; /* pushed lower near author/type */
+  }
+  .meta span{
+    font-weight:800;
+    opacity:.85;
+    font-size:.88rem;
+  }
+
+  .btn-row{
+    display:flex;
+    gap:10px;
+    margin-top:8px;
+  }
+  .btn{
+    flex:1;
+    border:none;
+    border-radius:16px;
+    padding:12px 12px;
+    font-weight:900;
+    letter-spacing:.4px;
+    text-transform:uppercase;
+    font-size:.78rem;
+    transition:.15s;
+    background:var(--accent);
+    color:var(--bg);
+  }
+  .btn:hover{transform:scale(1.02)}
+  .btn.secondary{
+    background:transparent;
+    color:var(--text);
+    border:1px solid var(--border);
+  }
+  .btn.secondary:hover{background:var(--border)}
+
+  .download-wrap{
+    display:flex;
+    justify-content:center;
+    margin-top:10px;
+  }
+  .download{
+    border:1px solid var(--border);
+    background:transparent;
+    color:var(--text);
+    padding:10px 18px;
+    border-radius:999px;
+    font-weight:900;
+    letter-spacing:.5px;
+    text-transform:uppercase;
+    font-size:.76rem;
+    transition:.15s;
+    text-decoration:none;
+  }
+  .download:hover{background:var(--border);transform:scale(1.03)}
+</style>
+</head>
+
+<body>
+<canvas class="trail-canvas" id="trail"></canvas>
+<div class="cursor" id="cursor"></div>
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-links">
+      <a href="index.html">HOME</a>
+      <a href="index.html#vip">VIP</a>
+      <a href="news.html">NEWS</a>
+    </div>
+    <label class="toggle" aria-label="Toggle dark mode">
+      <input type="checkbox" id="themeToggle">
+      <span class="slider"></span>
+    </label>
+  </div>
+</nav>
+
+<div class="wrap">
+  <h1>Maps</h1>
+  <div class="sub">Browse projects and open demos in the web player.</div>
+
+  <div class="selectors">
+    <!-- WIP / Finished -->
+    <div class="segmented" role="radiogroup" aria-label="Project status">
+      <label>
+        <input type="radio" name="status" value="wip" checked>
+        <span class="seg-btn">Work In Progress</span>
+      </label>
+      <label>
+        <input type="radio" name="status" value="finished">
+        <span class="seg-btn">Finished Maps</span>
+      </label>
+    </div>
+
+    <!-- Categories (order you asked) -->
+    <div class="cats" aria-label="Map categories">
+      <button class="cat-btn active" data-cat="slide" type="button">Slide</button>
+      <button class="cat-btn" data-cat="hns-skill" type="button">HNS Skill</button>
+      <button class="cat-btn" data-cat="hns-boost" type="button">HNS Boost</button>
+      <button class="cat-btn" data-cat="kz" type="button">KZ</button>
+    </div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+  // Theme
+  const themeToggle=document.getElementById('themeToggle');
+  if(localStorage.getItem('theme')==='dark'){
+    document.body.classList.add('dark');
+    themeToggle.checked=true;
+  }
+  themeToggle.addEventListener('change',()=>{
+    document.body.classList.toggle('dark');
+    const mode=document.body.classList.contains('dark')?'dark':'light';
+    localStorage.setItem('theme',mode);
+    location.reload();
+  });
+
+  // Data (your map)
+  const MAPS = [
+    {
+      id: "shantaj_slide_fortress",
+      name: "shantaj_slide_fortress",
+      status: "wip",
+      category: "slide",
+      author: "flowstate",
+      type: "Slide / Medieval",
+      image: "shantaj_slide_fortress.jpg",
+      demo: "shantaj_slide_fortress4.dem",
+      bsp: "shantaj_slide_fortress4.bsp",
+      download: "res/maps/shantaj_slide_fortress4.bsp"
+    }
+  ];
+
+  let activeStatus = "wip";
+  let activeCat = "slide";
+
+  const grid = document.getElementById('grid');
+
+  function openPlayerDemo(m){
+    const url = `player.html?demo=${encodeURIComponent(m.demo)}&title=${encodeURIComponent(m.name)}`;
+    window.open(url, "_blank", "noopener");
+  }
+  function openPlayerMap(m){
+    const url = `player.html?map=${encodeURIComponent(m.bsp)}&title=${encodeURIComponent(m.name)}`;
+    window.open(url, "_blank", "noopener");
+  }
+
+  function render(){
+    const filtered = MAPS.filter(m => m.status === activeStatus && m.category === activeCat);
+    grid.innerHTML = "";
+
+    filtered.forEach(m=>{
+      const card = document.createElement('div');
+      card.className = "card";
+      card.innerHTML = `
+        <img class="img" src="${m.image}" alt="${m.name}">
+        <div class="content">
+          <div class="name-row">
+            <div class="map-name">${m.name}</div>
+            <div class="badges">
+              <div class="badge">${m.status === 'wip' ? 'WIP' : 'FINISHED'}</div>
+              <div class="badge">${activeCat.toUpperCase().replace('-',' ')}</div>
+            </div>
+          </div>
+
+          <div class="meta">
+            <span>Author: <b>${m.author}</b></span>
+            <span>Type: <b>${m.type}</b></span>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn secondary" type="button">Look Around</button>
+            <button class="btn" type="button">Play Demo</button>
+          </div>
+
+          <div class="download-wrap">
+            <a class="download" href="${m.download}" download>Download</a>
+          </div>
+        </div>
+      `;
+
+      const lookBtn = card.querySelectorAll('button')[0];
+      const demoBtn = card.querySelectorAll('button')[1];
+
+      lookBtn.addEventListener('click', ()=> openPlayerMap(m));
+      demoBtn.addEventListener('click', ()=> openPlayerDemo(m));
+
+      grid.appendChild(card);
+    });
+  }
+
+  // Status selector
+  document.querySelectorAll('input[name="status"]').forEach(r=>{
+    r.addEventListener('change', (e)=>{
+      activeStatus = e.target.value;
+      render();
+    });
+  });
+
+  // Category selector
+  document.querySelectorAll('.cat-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      activeCat = btn.dataset.cat;
+      render();
+    });
+  });
+
+  render();
+
+  // Cursor dot
+  const cursor=document.getElementById('cursor');
+  document.addEventListener('mousemove',e=>{ cursor.style.left=e.clientX+'px'; cursor.style.top=e.clientY+'px'; });
+
+  // Cursor trail (same feel as index)
+  const canvas = document.getElementById('trail');
+  const ctx = canvas.getContext('2d');
+  function resizeTrail(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  resizeTrail(); window.addEventListener('resize', resizeTrail);
+
+  const dots = [];
+  const MAX_DOTS = 120;
+  const LIFE_MS = 170;
+  const HEAD_R = 3.0;
+  const TAIL_R = 0.22;
+  const STEP = 2.8;
+
+  function accent(){
+    return getComputedStyle(document.body).getPropertyValue('--accent').trim() || '#111';
+  }
+  let lastX=null,lastY=null;
+  document.addEventListener('mousemove',(e)=>{
+    const now = performance.now();
+    if(lastX===null){ lastX=e.clientX; lastY=e.clientY; }
+    const dx=e.clientX-lastX, dy=e.clientY-lastY;
+    const dist=Math.hypot(dx,dy);
+    const steps=Math.max(1, Math.floor(dist/STEP));
+    for(let i=1;i<=steps;i++){
+      const t=i/steps;
+      dots.push({ x:lastX+dx*t, y:lastY+dy*t, t:now });
+    }
+    lastX=e.clientX; lastY=e.clientY;
+    while(dots.length>MAX_DOTS) dots.shift();
+  });
+
+  function drawDots(){
+    const now=performance.now();
+    while(dots.length && (now-dots[0].t)>LIFE_MS) dots.shift();
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    if(!dots.length){ requestAnimationFrame(drawDots); return; }
+    ctx.fillStyle = accent();
+    const n=dots.length;
+    for(let i=0;i<n;i++){
+      const headness = i/(n-1 || 1);
+      const age = (now-dots[i].t)/LIFE_MS;
+      const r = TAIL_R + (HEAD_R-TAIL_R)*headness;
+      const alpha = Math.max(0, 1 - (age*age));
+      ctx.globalAlpha = alpha;
+      ctx.beginPath();
+      ctx.arc(dots[i].x, dots[i].y, r, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(drawDots);
+  }
+  requestAnimationFrame(drawDots);
+</script>
+</body>
+</html>

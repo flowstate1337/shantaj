@@ -227,20 +227,12 @@
       992px 108px, 1022px 210px, 1056px 58px, 1086px 170px;
   }
 
-  @keyframes snowDropA{
-    from{ transform:translate3d(0,0,0); }
-    to  { transform:translate3d(0,240px,0); }
-  }
-  @keyframes snowDropB{
-    from{ transform:translate3d(0,0,0); }
-    to  { transform:translate3d(0,240px,0); }
-  }
+  @keyframes snowDropA{from{ transform:translate3d(0,0,0); }to{ transform:translate3d(0,240px,0); }}
+  @keyframes snowDropB{from{ transform:translate3d(0,0,0); }to{ transform:translate3d(0,240px,0); }}
 
   .cup-left, .cup-join{ position:relative; z-index:1; }
 
-  @media (prefers-reduced-motion: reduce){
-    .snow-layer{ animation:none; }
-  }
+  @media (prefers-reduced-motion: reduce){ .snow-layer{ animation:none; } }
 
   .post-card{padding:30px;border-radius:20px;background:var(--card);backdrop-filter:blur(20px);border:1px solid var(--border);overflow:hidden;max-height:220px;display:flex;flex-direction:column;transition:max-height .35s ease;}
   .post-card.expanded{max-height:1200px}
@@ -689,8 +681,9 @@
   <div class="nav-inner">
     <div class="nav-links">
       <a href="index.html">HOME</a>
-      <a href="#vip">VIP</a>
       <a href="news.html">NEWS</a>
+      <a href="maps.html">MAPS</a>
+      <a href="#vip">VIP</a>
     </div>
     <label class="toggle" aria-label="Toggle dark mode">
       <input type="checkbox" id="themeToggle">
@@ -1287,7 +1280,7 @@
     howIcon.textContent = howAcc.classList.contains('acc-open') ? "–" : "+";
   });
 
-  // ===== ORDER SUBMIT (FIXED: sends to your /exec?debug=1) =====
+  // ===== ORDER SUBMIT (FIXED) =====
   const ORDER_ENDPOINT = "https://script.google.com/macros/s/AKfycbzuUl3APdtnkb6P2ov5bJlawuwtlWWLI7FwELnBBOhEyFEqe2FzWwMu2a6xXm1zLjy_/exec";
 
   function submitOrderToSheets(){
@@ -1309,7 +1302,6 @@
 
     const url = ORDER_ENDPOINT + "?" + params.toString() + "&_=" + Date.now();
 
-    // Try POST beacon first (often survives blockers), then fetch no-cors, then image ping.
     let beaconOk = false;
     try{
       if(navigator.sendBeacon){
@@ -1319,14 +1311,10 @@
     }catch(e){}
 
     if(!beaconOk){
-      try{
-        fetch(url, { mode:"no-cors", credentials:"omit", referrerPolicy:"no-referrer" }).catch(function(){});
-      }catch(e){}
+      try{ fetch(url, { mode:"no-cors", credentials:"omit", referrerPolicy:"no-referrer" }).catch(function(){}); }catch(e){}
       const img = new Image();
       img.referrerPolicy = "no-referrer";
       img.src = url;
-
-      // keep reference briefly so it doesn't get GC'd instantly
       window.__orderPing = img;
       setTimeout(()=>{ try{ if(window.__orderPing === img) window.__orderPing = null; }catch(e){} }, 4000);
     }
@@ -1341,10 +1329,8 @@
       return;
     }
 
-    // SEND ORDER TO GOOGLE SHEETS
     submitOrderToSheets();
 
-    // Keep your existing UI behavior unchanged
     paidSection.style.display = "block";
     paidBtn.textContent = "Marked as paid";
     paidBtn.disabled = true;
@@ -1362,7 +1348,6 @@
     }
   });
 
-  // Keep modal in sync with duration changes
   document.querySelectorAll('input[name="vipDuration"]').forEach(r=>{
     r.addEventListener('change', ()=>{
       if(!modalBackdrop.classList.contains('show')) return;
